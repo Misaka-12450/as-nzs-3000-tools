@@ -1,0 +1,16 @@
+[project]
+name = "tools"
+version = "0.1.0"
+description = "Calculators and tools on a Streamlit-based website"
+requires-python = ">=3.14"
+dependencies = [
+    "streamlit~=1.54.0",
+    "pandas~=2.3.3",
+    "pytest>=8.4.2",
+]
+
+[dependency-groups]
+dev = ["pytest~=8.4.2", "pandas-stubs~=2.3.3"]
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]
