@@ -236,9 +236,9 @@ class C1A1(C1LoadGroup):
 
     def _calculate_maximum_demand_a_1_living_unit(self) -> float:
         # 3 A for 1 to 20 points + 2 A for each additional 20 points or part thereof
-        if self.num <= 20:
+        if self.num_loads <= 20:
             return 3
-        return 3 + 2 * (self.num // 20)
+        return 3 + 2 * (self.num_loads // 20)
 
     def _calculate_maximum_demand_a_2_to_5_living_units(self):
         # 6 A
