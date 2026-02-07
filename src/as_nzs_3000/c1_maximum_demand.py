@@ -50,6 +50,9 @@ class C1LoadGroup(metaclass=_C1LoadGroupMeta):
     #: Notes applicable to the load group.
     notes: list[type[c1_notes.C1Note]] = []
 
+    #: Minimum number of living units required for this load group.
+    _min_num_units: int = 0
+
     def __init__(
         self,
         rating: float | list[float] | None = None,
@@ -99,6 +102,9 @@ class C1LoadGroup(metaclass=_C1LoadGroupMeta):
             raise ValueError("num_load must be greater than zero.")
         if num_load > 1:
             self.rating_a = self.rating_a * num_load
+
+        if self._min_num_units and num_living_units < self._min_num_units:
+            raise LoadGroupNotApplicableException(self.__class__, num_living_units)
 
         # Validate number of living units
         if num_living_units > 0:
@@ -543,6 +549,7 @@ class C1H(C1LoadGroup):
     load_group = ["h"]
     load_group_description = "Communal lighting"
     notes = [c1_notes.C1Note6, c1_notes.C1Note7]
+    _min_num_units = 2
 
     def __init__(
         self,
@@ -584,6 +591,7 @@ class C1I(C1LoadGroup):
         "exceeding 10 A"
     )
     notes = [c1_notes.C1Note8, c1_notes.C1Note10, c1_notes.C1Note14]
+    _min_num_units = 2
 
     def __init__(
         self,
@@ -626,6 +634,8 @@ class C1J1(C1LoadGroup):
     )
     notes = [c1_notes.C1Note8]
 
+    _min_num_units = 2
+
     def __init__(
         self,
         rating: float | list[float] | None = None,
@@ -660,6 +670,8 @@ class C1J2(C1LoadGroup):
     )
     notes = [c1_notes.C1Note11]
 
+    _min_num_units = 2
+
     def __init__(
         self,
         rating: float | list[float] | None = None,
@@ -691,6 +703,7 @@ class C1J3(C1LoadGroup):
         "for the connection thereof — "
         "Spa and swimming pool heaters"
     )
+    _min_num_units = 2
 
     def __init__(
         self,
