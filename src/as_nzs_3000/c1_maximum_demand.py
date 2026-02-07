@@ -173,33 +173,41 @@ class C1LoadGroup(metaclass=_C1LoadGroupMeta):
         """
         return 0.0
 
+    def _calculate_maximum_demand_a(self) -> float:
+        """
+        Fallback maximum demand calculation used by all tier methods.
+        Subclasses with one formula for all tiers override this method.
+        :return: Maximum demand in amperes.
+        """
+        raise NotImplementedError("This method should be implemented in subclasses.")
+
     def _calculate_maximum_demand_a_1_living_unit(self) -> float:
         """
         Calculate maximum demand for single unit installations.
         :return: Maximum demand in amperes.
         """
-        raise NotImplementedError("This method should be implemented in subclasses.")
+        return self._calculate_maximum_demand_a()
 
     def _calculate_maximum_demand_a_2_to_5_living_units(self) -> float:
         """
         Calculate maximum demand for installations with 2 to 5 living units.
         :return: Maximum demand in amperes.
         """
-        raise NotImplementedError("This method should be implemented in subclasses.")
+        return self._calculate_maximum_demand_a()
 
     def _calculate_maximum_demand_a_6_to_20_living_units(self) -> float:
         """
         Calculate maximum demand for installations with 6 to 20 living units.
         :return: Maximum demand in amperes.
         """
-        raise NotImplementedError("This method should be implemented in subclasses.")
+        return self._calculate_maximum_demand_a()
 
     def _calculate_maximum_demand_a_21_plus_living_units(self) -> float:
         """
         Calculate maximum demand for installations with more than 20 living units.
         :return: Maximum demand in amperes.
         """
-        raise NotImplementedError("This method should be implemented in subclasses.")
+        return self._calculate_maximum_demand_a()
 
     @property
     def maximum_demand_a(self) -> float:
@@ -277,21 +285,13 @@ class C1A2(C1LoadGroup):
                 (f"Total wattage ({sum_rating_w} W) does not exceed" " 1000 W."),
             )
 
+    def _calculate_maximum_demand_a(self) -> float:
+        # No assessment for the purpose of maximum demand
+        return self._maximum_demand_not_assessed()
+
     def _calculate_maximum_demand_a_1_living_unit(self) -> float:
         # 75% connected load
         return sum(self.rating_a) * 0.75
-
-    def _calculate_maximum_demand_a_2_to_5(self) -> float:
-        # No assessment for the purpose of maximum demand
-        return self._maximum_demand_not_assessed()
-
-    def _calculate_maximum_demand_a_6_to_20(self) -> float:
-        # No assessment for the purpose of maximum demand
-        return self._maximum_demand_not_assessed()
-
-    def _calculate_maximum_demand_a_21_plus(self) -> float:
-        # No assessment for the purpose of maximum demand
-        return self._maximum_demand_not_assessed()
 
 
 class C1B1(C1LoadGroup):
@@ -350,19 +350,7 @@ class C1B2(C1LoadGroup):
     ):
         super().__init__(rating, num_load, rating_type, num_living_units)
 
-    def _calculate_maximum_demand_a_1_living_unit(self) -> float:
-        # 10 A
-        return 10
-
-    def _calculate_maximum_demand_a_2_to_5_living_units(self) -> float:
-        # 10 A
-        return 10
-
-    def _calculate_maximum_demand_a_6_to_20_living_units(self) -> float:
-        # 10 A
-        return 10
-
-    def _calculate_maximum_demand_a_21_plus_living_units(self) -> float:
+    def _calculate_maximum_demand_a(self) -> float:
         # 10 A
         return 10
 
@@ -386,19 +374,7 @@ class C1B3(C1LoadGroup):
     ):
         super().__init__(rating, num_load, rating_type, num_living_units)
 
-    def _calculate_maximum_demand_a_1_living_unit(self) -> float:
-        # 15 A
-        return 15
-
-    def _calculate_maximum_demand_a_2_to_5_living_units(self) -> float:
-        # 15 A
-        return 15
-
-    def _calculate_maximum_demand_a_6_to_20_living_units(self) -> float:
-        # 15 A
-        return 15
-
-    def _calculate_maximum_demand_a_21_plus_living_units(self) -> float:
+    def _calculate_maximum_demand_a(self) -> float:
         # 15 A
         return 15
 
@@ -453,19 +429,7 @@ class C1D(C1LoadGroup):
     )
     notes = [c1_notes.C1Note8, c1_notes.C1Note11]
 
-    def _calculate_maximum_demand_a_1_living_unit(self) -> float:
-        # 75% connected load
-        return sum(self.rating_a) * 0.75
-
-    def _calculate_maximum_demand_a_2_to_5_living_units(self) -> float:
-        # 75% connected load
-        return sum(self.rating_a) * 0.75
-
-    def _calculate_maximum_demand_a_6_to_20_living_units(self) -> float:
-        # 75% connected load
-        return sum(self.rating_a) * 0.75
-
-    def _calculate_maximum_demand_a_21_plus_living_units(self) -> float:
+    def _calculate_maximum_demand_a(self) -> float:
         # 75% connected load
         return sum(self.rating_a) * 0.75
 
@@ -559,18 +523,8 @@ class C1H(C1LoadGroup):
         num_living_units: int = 1,
     ):
         super().__init__(rating, num_load, rating_type, num_living_units)
-        if self.num_loads == 1:
-            raise LoadGroupNotApplicableException(self.__class__, self.num_loads)
 
-    def _calculate_maximum_demand_a_2_to_5_living_units(self):
-        # Full connected load
-        return sum(self.rating_a)
-
-    def _calculate_maximum_demand_a_6_to_20_living_units(self):
-        # Full connected load
-        return sum(self.rating_a)
-
-    def _calculate_maximum_demand_a_21_plus_living_units(self):
+    def _calculate_maximum_demand_a(self) -> float:
         # Full connected load
         return sum(self.rating_a)
 
@@ -601,18 +555,8 @@ class C1I(C1LoadGroup):
         num_living_units: int = 1,
     ):
         super().__init__(rating, num_load, rating_type, num_living_units)
-        if self.num_loads == 1:
-            raise LoadGroupNotApplicableException(self.__class__, self.num_loads)
 
-    def _calculate_maximum_demand_a_2_to_5_living_units(self):
-        # 2 A per point, up to a maximum of 15 A
-        return min(2 * self.num_loads, 15)
-
-    def _calculate_maximum_demand_a_6_to_20_living_units(self):
-        # 2 A per point, up to a maximum of 15 A
-        return min(2 * self.num_loads, 15)
-
-    def _calculate_maximum_demand_a_21_plus_living_units(self):
+    def _calculate_maximum_demand_a(self) -> float:
         # 2 A per point, up to a maximum of 15 A
         return min(2 * self.num_loads, 15)
 
@@ -644,18 +588,8 @@ class C1J1(C1LoadGroup):
         num_living_units: int = 1,
     ):
         super().__init__(rating, num_load, rating_type, num_living_units)
-        if self.num_loads == 1:
-            raise LoadGroupNotApplicableException(self.__class__, self.num_loads)
 
-    def _calculate_maximum_demand_a_2_to_5_living_units(self):
-        # 50% connected load
-        return sum(self.rating_a) * 0.5
-
-    def _calculate_maximum_demand_a_6_to_20_living_units(self):
-        # 50% connected load
-        return sum(self.rating_a) * 0.5
-
-    def _calculate_maximum_demand_a_21_plus_living_units(self):
+    def _calculate_maximum_demand_a(self) -> float:
         # 50% connected load
         return sum(self.rating_a) * 0.5
 
@@ -680,18 +614,8 @@ class C1J2(C1LoadGroup):
         num_living_units: int = 1,
     ):
         super().__init__(rating, num_load, rating_type, num_living_units)
-        if self.num_loads == 1:
-            raise LoadGroupNotApplicableException(self.__class__, self.num_loads)
 
-    def _calculate_maximum_demand_a_2_to_5_living_units(self):
-        # 75% connected load
-        return sum(self.rating_a) * 0.75
-
-    def _calculate_maximum_demand_a_6_to_20_living_units(self):
-        # 75% connected load
-        return sum(self.rating_a) * 0.75
-
-    def _calculate_maximum_demand_a_21_plus_living_units(self):
+    def _calculate_maximum_demand_a(self) -> float:
         # 75% connected load
         return sum(self.rating_a) * 0.75
 
@@ -713,14 +637,11 @@ class C1J3(C1LoadGroup):
         num_living_units: int = 1,
     ):
         super().__init__(rating, num_load, rating_type, num_living_units)
-        if self.num_loads == 1:
-            raise LoadGroupNotApplicableException(self.__class__, self.num_loads)
-        else:
-            raise NotImplementedError(
-                "This load group is currently not supported."
-            )  # FIXME
-            # 75% of the largest spa plus 75% of the largest swimming pool,
-            # plus 25% of the remainder
+        raise NotImplementedError(
+            "This load group is currently not supported."
+        )  # FIXME
+        # 75% of the largest spa plus 75% of the largest swimming pool,
+        # plus 25% of the remainder
 
 
 class C1J4(C1LoadGroup):
