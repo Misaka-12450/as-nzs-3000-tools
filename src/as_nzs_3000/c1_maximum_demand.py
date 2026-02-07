@@ -221,6 +221,34 @@ class C1B2(C1LoadGroup):
         if self.num <= 20:
             return 15
         return 15 + 7.5 * (self.num // 20)
+
+
+class C1B3(C1LoadGroup):
+    """
+    Where the electrical installation includes one or
+    more 20 A socket-outlets, other than socket-outlets
+    provided to supply electrical equipment set out in
+    load groups (c), (d), (e), (f), (g) and (l)(8, 10)
+    """
+
+    load_group = ["b", 3]
+    load_group_description = (
+        "Where the electrical installation includes one or "
+        "more 20 A socket-outlets, other than socket-outlets "
+        "provided to supply electrical equipment set out in "
+        "load groups (c), (d), (e), (f), (g) and (l)"
+    )
+    rule_1_unit_per_phase = (
+        "20 A for 1 to 20 points + 10 A "
+        "for each additional 20 points "
+        "or part thereof"
+    )
+    notes = [c1_notes.C1Note8, c1_notes.C1Note10]
+
+    def get_maximum_demand_a(self) -> float:
+        if self.num <= 20:
+            return 20
+        return 20 + 10 * (self.num // 20)
 class C1H(C1LoadGroup):
     """
     Not applicable
@@ -235,3 +263,4 @@ class C1H(C1LoadGroup):
 # Resolve forward references
 C1A1.load_group_exception = [C1A2, C1H]
 C1B2.load_group_exception = [C1C, C1D, C1E, C1F, C1G, C1L]
+C1B3.load_group_exception = [C1C, C1D, C1E, C1F, C1G, C1L]
