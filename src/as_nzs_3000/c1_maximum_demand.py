@@ -249,6 +249,28 @@ class C1B3(C1LoadGroup):
         if self.num <= 20:
             return 20
         return 20 + 10 * (self.num // 20)
+
+
+class C1C(C1LoadGroup):
+    load_group = ["c"]
+
+
+class C1D(C1LoadGroup):
+    load_group = ["d"]
+
+
+class C1E(C1LoadGroup):
+    load_group = ["e"]
+
+
+class C1F(C1LoadGroup):
+    load_group = ["f"]
+
+
+class C1G(C1LoadGroup):
+    load_group = ["g"]
+
+
 class C1H(C1LoadGroup):
     """
     Communal lighting
@@ -258,6 +280,26 @@ class C1H(C1LoadGroup):
     load_group_description = "Communal lighting"
     rule_1_unit_per_phase = "Not applicable"
     notes = [c1_notes.C1Note6, c1_notes.C1Note7]
+
+
+class C1I(C1LoadGroup):
+    load_group = ["i"]
+
+
+class C1J(C1LoadGroup):
+    load_group = ["j"]
+
+
+class C1K(C1LoadGroup):
+    load_group = ["k"]
+
+
+class C1L(C1LoadGroup):
+    load_group = ["l"]
+
+
+class C1M(C1LoadGroup):
+    load_group = ["m"]
 
 
 # Resolve forward references
