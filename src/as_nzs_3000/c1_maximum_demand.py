@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-import textwrap
+from as_nzs_3000 import c1_notes
 
 _NOMINAL_VOLTAGE = 230
 
@@ -12,53 +12,6 @@ class IncorrectLoadGroupException(Exception):
         if reason:
             msg = f"{reason} {msg}"
         super().__init__(msg)
-
-
-class _C1NoteMeta(type):
-    def __str__(cls) -> str:
-        return f"{cls.NUM}. {textwrap.dedent(cls.NOTE).strip()}"
-
-
-class C1Note(metaclass=_C1NoteMeta):
-    """
-    Notes for Table C1 load groups.
-    """
-
-    NUM: int
-    NOTE: str
-
-
-class C1Note4(C1Note):
-    NUM = 4
-    NOTE: str = "Lighting track systems are regarded as two points per metre of track."
-
-
-class C1Note6(C1Note):
-    NUM = 6
-    NOTE: str = """
-    In the calculation of the connected load, the following ratings are assigned to lighting:
-        
-    (a) Incandescent lamps 60 W or the actual wattage of the lamp to be installed,
-    whichever is the greater, except if the design of the luminaire associated with the
-    lampholder only permits lamps of less than 60 W to be inserted in any
-    lampholder, in which case, the connected load of that lampholder is the wattage
-    of the highest rated lamp that may be accommodated. For multi-lamp luminaires,
-    the load for each lampholder is assessed on the above basis.
-
-    (b) Fluorescent and other discharge lamps Full connected load, i.e. the actual
-    current consumed by the lighting arrangement, including the losses of auxiliary
-    equipment, such as ballasts and capacitors.
-
-    (c) Lighting tracks (230 V) 0.5 A/m per phase of track or the actual connected load,
-    whichever is the greater.
-    """
-
-
-class C1Note7(C1Note):
-    NUM = 7
-    NOTE: str = (
-        "Floodlighting, swimming pool lighting, tennis court lighting and the like."
-    )
 
 
 class _C1LoadGroupMeta(type):
@@ -92,7 +45,7 @@ class C1LoadGroup(metaclass=_C1LoadGroupMeta):
     load_group_description: str = ""
     load_group_exception: list[C1LoadGroup] = []
     rule_1_unit_per_phase: str = ""
-    notes: list[C1Note] = []
+    notes: list[c1_notes.C1Note] = []
 
     def __init__(
         self, num: int = 1, rating_a: float | None = None, rating_w: float | None = None
@@ -183,7 +136,7 @@ class C1A1(C1LoadGroup):
         "for each additional 20 points "
         "or part thereof"
     )
-    notes = [C1Note4, C1Note6]
+    notes = [c1_notes.C1Note4, c1_notes.C1Note6]
 
     def get_maximum_demand_a(self) -> float:
         if self.num <= 20:
@@ -200,7 +153,7 @@ class C1A2(C1LoadGroup):
     load_group_description = "Outdoor lighting exceeding a total of 1000 W"
     load_group_exception = []
     rule_1_unit_per_phase = "75% connected load"
-    notes = [C1Note6, C1Note7]
+    notes = [c1_notes.C1Note6, c1_notes.C1Note7]
 
     def __init__(
         self, num: int = 1, rating_a: float | None = None, rating_w: float | None = None
@@ -224,7 +177,7 @@ class C1H(C1LoadGroup):
     load_group = ["h"]
     load_group_description = "Communal lighting"
     rule_1_unit_per_phase = "Not applicable"
-    notes = [C1Note6, C1Note7]
+    notes = [c1_notes.C1Note6, c1_notes.C1Note7]
 
 
 # Resolve forward references
