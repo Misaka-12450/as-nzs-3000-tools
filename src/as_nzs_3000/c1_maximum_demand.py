@@ -165,14 +165,55 @@ class C1LoadGroup(metaclass=_C1LoadGroupMeta):
         """Rating per unit in watts."""
         return [r * _NOMINAL_VOLTAGE for r in self.rating_a]
 
+    def _calculate_maximum_demand_a_1_living_unit(self) -> float:
+        """
+        Calculate maximum demand for single unit installations.
+        :return: Maximum demand in amperes.
+        """
+        raise NotImplementedError("This method should be implemented in subclasses.")
+
+    def _calculate_maximum_demand_a_2_to_5_living_units(self) -> float:
+        """
+        Calculate maximum demand for installations with 2 to 5 living units.
+        :return: Maximum demand in amperes.
+        """
+        raise NotImplementedError("This method should be implemented in subclasses.")
+
+    def _calculate_maximum_demand_a_6_to_20_living_units(self) -> float:
+        """
+        Calculate maximum demand for installations with 6 to 20 living units.
+        :return: Maximum demand in amperes.
+        """
+        raise NotImplementedError("This method should be implemented in subclasses.")
+
+    def _calculate_maximum_demand_a_21_plus_living_units(self) -> float:
+        """
+        Calculate maximum demand for installations with more than 20 living units.
+        :return: Maximum demand in amperes.
+        """
+        raise NotImplementedError("This method should be implemented in subclasses.")
+
     @property
     def maximum_demand_a(self) -> float:
-        """Maximum demand in amperes according to the rules."""
-        return sum(self.rating_a)
+        """
+        Calculates maximum demand of the load group in amperes.
+        :return: Maximum demand in amperes.
+        """
+        if self.num_living_units == 1:
+            return self._calculate_maximum_demand_a_1_living_unit()
+        elif 2 <= self.num_living_units <= 5:
+            return self._calculate_maximum_demand_a_2_to_5_living_units()
+        elif 6 <= self.num_living_units <= 20:
+            return self._calculate_maximum_demand_a_6_to_20_living_units()
+        else:  # self.num_living_units > 20
+            return self._calculate_maximum_demand_a_21_plus_living_units()
 
     @property
     def maximum_demand_w(self) -> float:
-        """Maximum demand in watts according to the rules."""
+        """
+        Calculates maximum demand of the load group in watts.
+        :return: Maximum demand in watts.
+        """
         return self.maximum_demand_a * _NOMINAL_VOLTAGE
 
 
@@ -185,11 +226,10 @@ class C1A1(C1LoadGroup):
     load_group_description = "Lighting except (ii) and load group (h) below"
     notes = [c1_notes.C1Note4, c1_notes.C1Note6]
 
-    def get_maximum_demand_a(self) -> float:
-        if self.num_living_units == 1:
-            if self.num <= 20:
-                return 3
-            return 3 + 2 * (self.num // 20)
+    def _calculate_maximum_demand_a_1_living_unit(self) -> float:
+        if self.num <= 20:
+            return 3
+        return 3 + 2 * (self.num // 20)
 
 
 class C1A2(C1LoadGroup):
@@ -215,10 +255,8 @@ class C1A2(C1LoadGroup):
                 (f"Total wattage ({sum_rating_w} W) does not exceed" " 1000 W."),
             )
 
-    @property
-    def maximum_demand_a(self) -> float:
-        if self.num_living_units == 1:
-            return sum(self.rating_a) * 0.75
+    def _calculate_maximum_demand_a_1_living_unit(self) -> float:
+        return self._calculate_maximum_demand_a_1_living_unit()
 
 
 class C1B1(C1LoadGroup):
@@ -236,12 +274,10 @@ class C1B1(C1LoadGroup):
     )
     notes = [c1_notes.C1Note5, c1_notes.C1Note8, c1_notes.C1Note9]
 
-    @property
-    def maximum_demand_a(self) -> float:
-        if self.num_living_units == 1:
-            if self.num_loads <= 20:
-                return 10
-            return 10 + 5 * (self.num_loads // 20)
+    def _calculate_maximum_demand_a_1_living_unit(self) -> float:
+        if self.num_loads <= 20:
+            return 10
+        return 10 + 5 * (self.num_loads // 20)
 
 
 class C1B2(C1LoadGroup):
@@ -261,10 +297,8 @@ class C1B2(C1LoadGroup):
     )
     notes = [c1_notes.C1Note8, c1_notes.C1Note10]
 
-    @property
-    def maximum_demand_a(self) -> float:
-        if self.num_living_units == 1:
-            return 10
+    def _calculate_maximum_demand_a_1_living_unit(self) -> float:
+        return 15
 
 
 class C1B3(C1LoadGroup):
@@ -284,10 +318,8 @@ class C1B3(C1LoadGroup):
     )
     notes = [c1_notes.C1Note8, c1_notes.C1Note10]
 
-    @property
-    def maximum_demand_a(self) -> float:
-        if self.num_living_units == 1:
-            return 15
+    def _calculate_maximum_demand_a_1_living_unit(self) -> float:
+        return 20
 
 
 class C1C(C1LoadGroup):
@@ -305,10 +337,8 @@ class C1C(C1LoadGroup):
         """
     notes = [c1_notes.C1Note8]
 
-    @property
-    def maximum_demand_a(self) -> float:
-        if self.num_living_units == 1:
-            return sum(self.rating_a) * 0.5
+    def _calculate_maximum_demand_a_1_living_unit(self) -> float:
+        return sum(self.rating_a) * 0.5
 
 
 class C1D(C1LoadGroup):
@@ -326,10 +356,8 @@ class C1D(C1LoadGroup):
     )
     notes = [c1_notes.C1Note8, c1_notes.C1Note11]
 
-    @property
-    def maximum_demand_a(self) -> float:
-        if self.num_living_units == 1:
-            return sum(self.rating_a) * 0.75
+    def _calculate_maximum_demand_a_1_living_unit(self) -> float:
+        return sum(self.rating_a) * 0.75
 
 
 class C1E(C1LoadGroup):
@@ -341,10 +369,8 @@ class C1E(C1LoadGroup):
     load_group_description = "Instantaneous water heaters"
     notes = [c1_notes.C1Note12]
 
-    @property
-    def maximum_demand_a(self) -> float:
-        if self.num_living_units == 1:
-            return sum(self.rating_a) * 0.33
+    def _calculate_maximum_demand_a_1_living_unit(self) -> float:
+        return sum(self.rating_a) * 0.33
 
 
 class C1F(C1LoadGroup):
@@ -356,10 +382,8 @@ class C1F(C1LoadGroup):
     load_group_description = "Storage water heaters"
     notes = [c1_notes.C1Note13]
 
-    @property
-    def maximum_demand_a(self) -> float:
-        if self.num_living_units == 1:
-            return sum(self.rating_a)
+    def _calculate_maximum_demand_a_1_living_unit(self) -> float:
+        return sum(self.rating_a)
 
 
 class C1G(C1LoadGroup):
@@ -371,10 +395,11 @@ class C1G(C1LoadGroup):
     load_group_description = "Spa and swimming pool heaters"
     notes = [c1_notes.C1Note14]
 
-    @property
-    def maximum_demand_a(self) -> float:
-        # TODO: Major refactor needed to implement the full rules.
-        return sum(self.rating_a) * 0.75
+    def __init__(self, rating=None, num_load=1, rating_type="A", num_living_units=1):
+        super().__init__(rating, num_load, rating_type, num_living_units)
+        raise NotImplementedError(
+            "This load group is currently not supported."
+        )  # FIXME
 
 
 class C1H(C1LoadGroup):
