@@ -243,7 +243,23 @@ class C1B3(C1LoadGroup):
 
 
 class C1C(C1LoadGroup):
+    """
+    Ranges, cooking appliances, laundry equipment or
+    socket-outlets rated at more than 10 A for the
+    connection thereof(8)
+    """
+
     load_group = ["c"]
+    load_group_description = """
+        Ranges, cooking appliances, laundry equipment or
+        socket-outlets rated at more than 10 A for the
+        connection thereof
+        """
+    notes = [c1_notes.C1Note8]
+
+    def get_maximum_demand_a(self) -> float:
+        if self.num_living_units == 1:
+            return self.num * self.rating_a * 0.5
 
 
 class C1D(C1LoadGroup):
