@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from typing import Literal
+
 from as_nzs_3000 import c1_notes
 
 _NOMINAL_VOLTAGE = 230
@@ -11,6 +13,16 @@ class IncorrectLoadGroupException(Exception):
         msg = f"Use {repr(correct_group)} ({correct_group.__name__}) instead."
         if reason:
             msg = f"{reason} {msg}"
+        super().__init__(msg)
+
+
+class LoadGroupNotApplicableException(Exception):
+    def __init__(self, load_group: type[C1LoadGroup], num: int = 1):
+        self.load_group = load_group
+        msg = (
+            f"{repr(load_group)} ({load_group.__name__}) "
+            f"is not applicable to {num} {"unit" if num==1 else "units"}."
+        )
         super().__init__(msg)
 
 
@@ -30,53 +42,71 @@ class C1LoadGroup(metaclass=_C1LoadGroupMeta):
     Class for calculating maximum demand for various load types.
     Based on AS/NZS 3000 Table C1.
 
-    :cvar load_group: The load group name.
-    :cvar load_group_description: Description of the load group.
-    :cvar load_group_exception: Loads in other load groups and excluded from this load group.
-    :cvar notes: Notes applicable to the load group.
+    :cvar list[str | int] load_group: Load group number in list representation.
+        E.g. ['a', 1] for load group (a) (i).
+    :cvar str load_group_description: Description of the load group.
+    :cvar list[type[C1LoadGroup]] load_group_exception:
+        Loads in other load groups and excluded from this load group.
+    :cvar list[c1_notes.C1Note] notes: Notes applicable to the load group.
 
-    :ivar num: Number of units.
-    :ivar rating_a: Rating per unit in amperes.
-    :ivar rating_w: Rating per unit in watts.
+    :ivar list[float] rating_a: Rating per unit in amperes.
+        Can be a list for different ratings.
+    :ivar int num_living_units: Number of living units per phase.
     """
 
     load_group: list[str | int] = []
     load_group_description: str = ""
-    load_group_exception: list[C1LoadGroup] = []
+    load_group_exception: list[type[C1LoadGroup]] = []
     notes: list[c1_notes.C1Note] = []
 
     def __init__(
         self,
-        num: int = 1,
-        rating_a: float | None = None,
-        rating_w: float | None = None,
+        rating: float | list[float] | None = None,
+        num_load: int = 1,
+        rating_type: Literal["A", "W"] = "A",
         num_living_units: int = 1,
     ):
-        if num > 0:
-            self.num = num
-        else:
-            raise ValueError("num must be greater than zero.")
+        """
+        :param float | list[float] rating: Rating per unit.
+            Can be a list for different ratings.
+        :param int num_load: Number of loads in this load group.
+            If `rating` is a list, this is the number of loads per rating.
+            E.g. `rating=[10, 20]` and `num_load=2` means 2 loads of 10 and 2 loads of
+            20.
+        :param Literal["A", "W"] rating_type:
+            Type of rating, either "A" for amperes or "W" for watts.
+        :param int num_living_units: Number of living units per phase.
+            Use 1 for single domestic installations.
 
-        if (rating_a is not None and rating_a > 0) and (
-            rating_w is not None and rating_w > 0
-        ):
-            if abs(rating_w - rating_a * _NOMINAL_VOLTAGE) > 1e-6:
-                raise ValueError(
-                    "rating_a and rating_w are inconsistent with each other."
-                )
-            self.rating_a = rating_a
-            self.rating_w = rating_w
-        elif rating_a is not None and rating_a > 0:
-            self.rating_a = rating_a
-            self.rating_w = rating_a * _NOMINAL_VOLTAGE
-        elif rating_w is not None and rating_w > 0:
-            self.rating_w = rating_w
-            self.rating_a = rating_w / _NOMINAL_VOLTAGE
-        else:
-            raise ValueError(
-                "Either rating_a or rating_w that is greater than zero must be provided."
-            )
+        :raises ValueError: If any value is zero or negative.
+        :raises IncorrectLoadGroupException:
+            If the load should be in another load group.
+        :raises LoadGroupNotApplicableException: If the load group is not applicable.
+        """
 
+        # Validate ratings
+        if rating is None:
+            raise ValueError("rating must be provided.")
+        ratings = rating if isinstance(rating, list) else [rating]
+        for r in ratings:
+            if r <= 0:
+                raise ValueError("All rating values must be greater than zero.")
+
+        # Convert ratings to amperes if necessary
+        if rating_type == "A":
+            self.rating_a = ratings
+        elif rating_type == "W":
+            self.rating_a = [r / _NOMINAL_VOLTAGE for r in ratings]
+        else:
+            raise ValueError("rating_type must be either 'A' or 'W'.")
+
+        # Validate number of units
+        if num_load <= 0:
+            raise ValueError("num_load must be greater than zero.")
+        if num_load > 1:
+            self.rating_a = self.rating_a * num_load
+
+        # Validate number of living units
         if num_living_units > 0:
             self.num_living_units = num_living_units
         else:
@@ -121,19 +151,28 @@ class C1LoadGroup(metaclass=_C1LoadGroupMeta):
 
         return s
 
-    def get_maximum_demand_a(self) -> float:
+    @property
+    def num_loads(self) -> int:
         """
-        Calculate the maximum demand in amperes.
-        :return: The total amperes as calculated according to the rules.
+        Get the number of loads in this load group.
+        :return: The number of loads.
         """
-        return self.num * self.rating_a
+        return len(self.rating_a)
 
-    def get_maximum_demand_w(self) -> float:
-        """
-        Calculate the maximum demand in watts.
-        :return: The total watts as calculated according to the rules.
-        """
-        return self.get_maximum_demand_a() * _NOMINAL_VOLTAGE
+    @property
+    def rating_w(self) -> list[float]:
+        """Rating per unit in watts."""
+        return [r * _NOMINAL_VOLTAGE for r in self.rating_a]
+
+    @property
+    def maximum_demand_a(self) -> float:
+        """Maximum demand in amperes according to the rules."""
+        return sum(self.rating_a)
+
+    @property
+    def maximum_demand_w(self) -> float:
+        """Maximum demand in watts according to the rules."""
+        return self.maximum_demand_a * _NOMINAL_VOLTAGE
 
 
 class C1A1(C1LoadGroup):
@@ -162,18 +201,23 @@ class C1A2(C1LoadGroup):
     notes = [c1_notes.C1Note6, c1_notes.C1Note7]
 
     def __init__(
-        self, num: int = 1, rating_a: float | None = None, rating_w: float | None = None
+        self,
+        rating: float | list[float] | None = None,
+        num_load: int = 1,
+        rating_type: Literal["A", "W"] = "A",
+        num_living_units: int = 1,
     ):
-        super().__init__(num=num, rating_a=rating_a, rating_w=rating_w)
-        if self.rating_w * self.num < 1000:
+        super().__init__(rating, num_load, rating_type, num_living_units)
+        if (sum_rating_w := sum(self.rating_w)) < 1000:
             raise IncorrectLoadGroupException(
                 C1A1,
-                f"Total wattage ({self.rating_w * self.num} W) does not exceed 1000 W.",
+                (f"Total wattage ({sum_rating_w} W) does not exceed" " 1000 W."),
             )
 
-    def get_maximum_demand_a(self) -> float:
+    @property
+    def maximum_demand_a(self) -> float:
         if self.num_living_units == 1:
-            return self.num * self.rating_a * 0.75
+            return sum(self.rating_a) * 0.75
 
 
 class C1B1(C1LoadGroup):
@@ -191,11 +235,12 @@ class C1B1(C1LoadGroup):
     )
     notes = [c1_notes.C1Note5, c1_notes.C1Note8, c1_notes.C1Note9]
 
-    def get_maximum_demand_a(self) -> float:
+    @property
+    def maximum_demand_a(self) -> float:
         if self.num_living_units == 1:
-            if self.num <= 20:
+            if self.num_loads <= 20:
                 return 10
-            return 10 + 5 * (self.num // 20)
+            return 10 + 5 * (self.num_loads // 20)
 
 
 class C1B2(C1LoadGroup):
@@ -215,7 +260,8 @@ class C1B2(C1LoadGroup):
     )
     notes = [c1_notes.C1Note8, c1_notes.C1Note10]
 
-    def get_maximum_demand_a(self) -> float:
+    @property
+    def maximum_demand_a(self) -> float:
         if self.num_living_units == 1:
             return 10
 
@@ -237,7 +283,8 @@ class C1B3(C1LoadGroup):
     )
     notes = [c1_notes.C1Note8, c1_notes.C1Note10]
 
-    def get_maximum_demand_a(self) -> float:
+    @property
+    def maximum_demand_a(self) -> float:
         if self.num_living_units == 1:
             return 15
 
@@ -257,25 +304,76 @@ class C1C(C1LoadGroup):
         """
     notes = [c1_notes.C1Note8]
 
-    def get_maximum_demand_a(self) -> float:
+    @property
+    def maximum_demand_a(self) -> float:
         if self.num_living_units == 1:
-            return self.num * self.rating_a * 0.5
+            return sum(self.rating_a) * 0.5
 
 
 class C1D(C1LoadGroup):
+    """
+    Fixed space heating or airconditioning equipment,
+    saunas or socket-outlets rated at more than 10 A for the
+    connection thereof(8, 11)
+    """
+
     load_group = ["d"]
+    load_group_description = (
+        "Fixed space heating or airconditioning equipment, "
+        "saunas or socket-outlets rated at more than 10 A for the "
+        "connection thereof"
+    )
+    notes = [c1_notes.C1Note8, c1_notes.C1Note11]
+
+    @property
+    def maximum_demand_a(self) -> float:
+        if self.num_living_units == 1:
+            return sum(self.rating_a) * 0.75
 
 
 class C1E(C1LoadGroup):
+    """
+    Instantaneous water heaters(12)
+    """
+
     load_group = ["e"]
+    load_group_description = "Instantaneous water heaters"
+    notes = [c1_notes.C1Note12]
+
+    @property
+    def maximum_demand_a(self) -> float:
+        if self.num_living_units == 1:
+            return sum(self.rating_a) * 0.33
 
 
 class C1F(C1LoadGroup):
+    """
+    Storage water heaters(13)
+    """
+
     load_group = ["f"]
+    load_group_description = "Storage water heaters"
+    notes = [c1_notes.C1Note13]
+
+    @property
+    def maximum_demand_a(self) -> float:
+        if self.num_living_units == 1:
+            return sum(self.rating_a)
 
 
 class C1G(C1LoadGroup):
+    """
+    Spa and swimming pool heaters
+    """
+
     load_group = ["g"]
+    load_group_description = "Spa and swimming pool heaters"
+    notes = [c1_notes.C1Note14]
+
+    @property
+    def maximum_demand_a(self) -> float:
+        # TODO: Major refactor needed to implement the full rules.
+        return sum(self.rating_a) * 0.75
 
 
 class C1H(C1LoadGroup):
@@ -287,25 +385,68 @@ class C1H(C1LoadGroup):
     load_group_description = "Communal lighting"
     notes = [c1_notes.C1Note6, c1_notes.C1Note7]
 
+    def __init__(self):
+        super().__init__()
+        if self.num_loads == 1:
+            raise LoadGroupNotApplicableException(self.__class__, self.num_loads)
+
 
 class C1I(C1LoadGroup):
     load_group = ["i"]
 
+    def __init__(self):
+        super().__init__()
+        if self.num_loads == 1:
+            raise LoadGroupNotApplicableException(self.__class__, self.num_loads)
 
-class C1J(C1LoadGroup):
-    load_group = ["j"]
+
+class C1J1(C1LoadGroup):
+    """
+    Appliances rated at more than 10 A and socket-outlets
+    for the connection thereof
+    Clothes dryers, water heaters, self-heating washing
+    machines, wash boilers(8)
+    """
+
+    load_group = ["j", 1]
+    load_group_description = (
+        "Appliances rated at more than 10 A and socket-outlets "
+        "for the connection thereof "
+        "Clothes dryers, water heaters, "
+        "self-heating washing machines, wash boilers"
+    )
+    notes = [c1_notes.C1Note8]
+
+    def __init__(self):
+        super().__init__()
+        if self.num_loads == 1:
+            raise LoadGroupNotApplicableException(self.__class__, self.num_loads)
 
 
-class C1K(C1LoadGroup):
-    load_group = ["k"]
+class C1J2(C1LoadGroup):
+    load_group = ["j", 2]
+
+    def __init__(self):
+        super().__init__()
+        if self.num_loads == 1:
+            raise LoadGroupNotApplicableException(self.__class__, self.num_loads)
+
+
+class C1J3(C1LoadGroup):
+    load_group = ["j", 3]
+
+    def __init__(self):
+        super().__init__()
+        if self.num_loads == 1:
+            raise LoadGroupNotApplicableException(self.__class__, self.num_loads)
+
+
+class C1J4(C1LoadGroup):
+    load_group = ["j", 4]
 
 
 class C1L(C1LoadGroup):
     load_group = ["l"]
-
-
-class C1M(C1LoadGroup):
-    load_group = ["m"]
 
 
 # Resolve forward references
