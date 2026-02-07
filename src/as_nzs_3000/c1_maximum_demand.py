@@ -46,14 +46,27 @@ class C1LoadGroup(metaclass=_C1LoadGroupMeta):
     notes: list[c1_notes.C1Note] = []
 
     def __init__(
-        self, num: int = 1, rating_a: float | None = None, rating_w: float | None = None
+        self,
+        num: int = 1,
+        rating_a: float | None = None,
+        rating_w: float | None = None,
+        num_living_units: int = 1,
     ):
         if num > 0:
             self.num = num
         else:
             raise ValueError("num must be greater than zero.")
 
-        if rating_a is not None and rating_a > 0:
+        if (rating_a is not None and rating_a > 0) and (
+            rating_w is not None and rating_w > 0
+        ):
+            if abs(rating_w - rating_a * _NOMINAL_VOLTAGE) > 1e-6:
+                raise ValueError(
+                    "rating_a and rating_w are inconsistent with each other."
+                )
+            self.rating_a = rating_a
+            self.rating_w = rating_w
+        elif rating_a is not None and rating_a > 0:
             self.rating_a = rating_a
             self.rating_w = rating_a * _NOMINAL_VOLTAGE
         elif rating_w is not None and rating_w > 0:
@@ -63,6 +76,11 @@ class C1LoadGroup(metaclass=_C1LoadGroupMeta):
             raise ValueError(
                 "Either rating_a or rating_w that is greater than zero must be provided."
             )
+
+        if num_living_units > 0:
+            self.num_living_units = num_living_units
+        else:
+            raise ValueError("num_living_units must be greater than zero.")
 
     @staticmethod
     def _add_strings(s1: str, s2: str, n: int = 2) -> str:
