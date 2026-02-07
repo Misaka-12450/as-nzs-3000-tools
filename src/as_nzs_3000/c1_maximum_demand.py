@@ -251,7 +251,7 @@ class C1B3(C1LoadGroup):
         return 20 + 10 * (self.num // 20)
 class C1H(C1LoadGroup):
     """
-    Not applicable
+    Communal lighting
     """
 
     load_group = ["h"]
