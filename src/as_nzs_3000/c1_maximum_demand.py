@@ -33,7 +33,6 @@ class C1LoadGroup(metaclass=_C1LoadGroupMeta):
     :cvar load_group: The load group name.
     :cvar load_group_description: Description of the load group.
     :cvar load_group_exception: Loads in other load groups and excluded from this load group.
-    :cvar rule_1_unit_per_phase: Calculation rules for single domestic installations.
     :cvar notes: Notes applicable to the load group.
 
     :ivar num: Number of units.
@@ -44,7 +43,6 @@ class C1LoadGroup(metaclass=_C1LoadGroupMeta):
     load_group: list[str | int] = []
     load_group_description: str = ""
     load_group_exception: list[C1LoadGroup] = []
-    rule_1_unit_per_phase: str = ""
     notes: list[c1_notes.C1Note] = []
 
     def __init__(
@@ -91,9 +89,6 @@ class C1LoadGroup(metaclass=_C1LoadGroupMeta):
         if self.load_group_description:
             s += self.load_group_description
 
-        if self.rule_1_unit_per_phase:
-            s = self._add_strings(s, self.rule_1_unit_per_phase)
-
         if self.load_group_exception:
             s = self._add_strings(s, "Exceptions:")
             for exception in self.load_group_exception:
@@ -130,12 +125,6 @@ class C1A1(C1LoadGroup):
 
     load_group = ["a", 1]
     load_group_description = "Lighting except (ii) and load group (h) below"
-    load_group_exception = []
-    rule_1_unit_per_phase = (
-        "3 A for 1 to 20 points + 2 A "
-        "for each additional 20 points "
-        "or part thereof"
-    )
     notes = [c1_notes.C1Note4, c1_notes.C1Note6]
 
     def get_maximum_demand_a(self) -> float:
@@ -151,8 +140,6 @@ class C1A2(C1LoadGroup):
 
     load_group = ["a", 2]
     load_group_description = "Outdoor lighting exceeding a total of 1000 W"
-    load_group_exception = []
-    rule_1_unit_per_phase = "75% connected load"
     notes = [c1_notes.C1Note6, c1_notes.C1Note7]
 
     def __init__(
@@ -182,11 +169,6 @@ class C1B1(C1LoadGroup):
         "connected electrical equipment not exceeding 10 A "
         "and not included in other load groups"
     )
-    rule_1_unit_per_phase = (
-        "10 A for 1 to 20 points + 5 A"
-        "for each additional 20 points"
-        "or part thereof"
-    )
     notes = [c1_notes.C1Note5, c1_notes.C1Note8, c1_notes.C1Note9]
 
     def get_maximum_demand_a(self) -> float:
@@ -210,11 +192,6 @@ class C1B2(C1LoadGroup):
         "provided to supply electrical equipment set out in "
         "load groups (c), (d), (e), (f), (g) and (l)"
     )
-    rule_1_unit_per_phase = (
-        "15 A for 1 to 20 points + 7.5 A "
-        "for each additional 20 points "
-        "or part thereof"
-    )
     notes = [c1_notes.C1Note8, c1_notes.C1Note10]
 
     def get_maximum_demand_a(self) -> float:
@@ -237,11 +214,6 @@ class C1B3(C1LoadGroup):
         "more 20 A socket-outlets, other than socket-outlets "
         "provided to supply electrical equipment set out in "
         "load groups (c), (d), (e), (f), (g) and (l)"
-    )
-    rule_1_unit_per_phase = (
-        "20 A for 1 to 20 points + 10 A "
-        "for each additional 20 points "
-        "or part thereof"
     )
     notes = [c1_notes.C1Note8, c1_notes.C1Note10]
 
@@ -278,7 +250,6 @@ class C1H(C1LoadGroup):
 
     load_group = ["h"]
     load_group_description = "Communal lighting"
-    rule_1_unit_per_phase = "Not applicable"
     notes = [c1_notes.C1Note6, c1_notes.C1Note7]
 
 
