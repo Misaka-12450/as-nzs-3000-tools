@@ -92,3 +92,24 @@ class C1Note9(C1Note):
 
 class C1Note10(C1Note):
     NUM = 10
+
+
+class C1Note11(C1Note):
+    NUM = 11
+    NOTE = """
+        Where an electrical installation includes an airconditioning system for use in hot
+        weather and a heating system for use in cool weather, only the system that has the
+        greater load is taken into account.
+        """
+
+
+class C1Note12(C1Note):
+    NUM = 12
+
+
+class C1Note13(C1Note):
+    NUM = 13
+
+
+class C1Note14(C1Note):
+    NUM = 14
