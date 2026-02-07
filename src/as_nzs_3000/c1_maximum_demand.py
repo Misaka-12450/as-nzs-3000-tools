@@ -47,7 +47,7 @@ class C1LoadGroup(metaclass=_C1LoadGroupMeta):
     :cvar str load_group_description: Description of the load group.
     :cvar list[type[C1LoadGroup]] load_group_exception:
         Loads in other load groups and excluded from this load group.
-    :cvar list[c1_notes.C1Note] notes: Notes applicable to the load group.
+    :cvar list[type[c1_notes.C1Note]] notes: Notes applicable to the load group.
 
     :ivar list[float] rating_a: Rating per unit in amperes.
         Can be a list for different ratings.
@@ -57,7 +57,7 @@ class C1LoadGroup(metaclass=_C1LoadGroupMeta):
     load_group: list[str | int] = []
     load_group_description: str = ""
     load_group_exception: list[type[C1LoadGroup]] = []
-    notes: list[c1_notes.C1Note] = []
+    notes: list[type[c1_notes.C1Note]] = []
 
     def __init__(
         self,
@@ -115,7 +115,8 @@ class C1LoadGroup(metaclass=_C1LoadGroupMeta):
     @staticmethod
     def _add_strings(s1: str, s2: str, n: int = 2) -> str:
         """
-        Add two strings together, and newline characters in-between if both strings are not empty.
+        Add two strings together, and newline characters in-between if both strings are
+        not empty.
         :return: The combined string with newline(s) in-between if applicable.
         """
         if s1 and s2:
