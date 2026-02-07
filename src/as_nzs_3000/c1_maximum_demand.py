@@ -146,9 +146,10 @@ class C1A1(C1LoadGroup):
     notes = [c1_notes.C1Note4, c1_notes.C1Note6]
 
     def get_maximum_demand_a(self) -> float:
-        if self.num <= 20:
-            return 3
-        return 3 + 2 * (self.num // 20)
+        if self.num_living_units == 1:
+            if self.num <= 20:
+                return 3
+            return 3 + 2 * (self.num // 20)
 
 
 class C1A2(C1LoadGroup):
@@ -171,7 +172,8 @@ class C1A2(C1LoadGroup):
             )
 
     def get_maximum_demand_a(self) -> float:
-        return self.num * self.rating_a * 0.75
+        if self.num_living_units == 1:
+            return self.num * self.rating_a * 0.75
 
 
 class C1B1(C1LoadGroup):
@@ -190,9 +192,10 @@ class C1B1(C1LoadGroup):
     notes = [c1_notes.C1Note5, c1_notes.C1Note8, c1_notes.C1Note9]
 
     def get_maximum_demand_a(self) -> float:
-        if self.num <= 20:
-            return 10
-        return 10 + 5 * (self.num // 20)
+        if self.num_living_units == 1:
+            if self.num <= 20:
+                return 10
+            return 10 + 5 * (self.num // 20)
 
 
 class C1B2(C1LoadGroup):
@@ -213,9 +216,8 @@ class C1B2(C1LoadGroup):
     notes = [c1_notes.C1Note8, c1_notes.C1Note10]
 
     def get_maximum_demand_a(self) -> float:
-        if self.num <= 20:
-            return 15
-        return 15 + 7.5 * (self.num // 20)
+        if self.num_living_units == 1:
+            return 10
 
 
 class C1B3(C1LoadGroup):
@@ -236,9 +238,8 @@ class C1B3(C1LoadGroup):
     notes = [c1_notes.C1Note8, c1_notes.C1Note10]
 
     def get_maximum_demand_a(self) -> float:
-        if self.num <= 20:
-            return 20
-        return 20 + 10 * (self.num // 20)
+        if self.num_living_units == 1:
+            return 15
 
 
 class C1C(C1LoadGroup):
