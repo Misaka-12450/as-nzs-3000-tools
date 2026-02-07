@@ -411,7 +411,13 @@ class C1H(C1LoadGroup):
     load_group_description = "Communal lighting"
     notes = [c1_notes.C1Note6, c1_notes.C1Note7]
 
-    def __init__(self):
+    def __init__(
+        self,
+        rating: float | list[float] | None = None,
+        num_load: int = 1,
+        rating_type: Literal["A", "W"] = "A",
+        num_living_units: int = 1,
+    ):
         super().__init__()
         if self.num_loads == 1:
             raise LoadGroupNotApplicableException(self.__class__, self.num_loads)
@@ -420,7 +426,13 @@ class C1H(C1LoadGroup):
 class C1I(C1LoadGroup):
     load_group = ["i"]
 
-    def __init__(self):
+    def __init__(
+        self,
+        rating: float | list[float] | None = None,
+        num_load: int = 1,
+        rating_type: Literal["A", "W"] = "A",
+        num_living_units: int = 1,
+    ):
         super().__init__()
         if self.num_loads == 1:
             raise LoadGroupNotApplicableException(self.__class__, self.num_loads)
@@ -443,7 +455,13 @@ class C1J1(C1LoadGroup):
     )
     notes = [c1_notes.C1Note8]
 
-    def __init__(self):
+    def __init__(
+        self,
+        rating: float | list[float] | None = None,
+        num_load: int = 1,
+        rating_type: Literal["A", "W"] = "A",
+        num_living_units: int = 1,
+    ):
         super().__init__()
         if self.num_loads == 1:
             raise LoadGroupNotApplicableException(self.__class__, self.num_loads)
@@ -452,7 +470,13 @@ class C1J1(C1LoadGroup):
 class C1J2(C1LoadGroup):
     load_group = ["j", 2]
 
-    def __init__(self):
+    def __init__(
+        self,
+        rating: float | list[float] | None = None,
+        num_load: int = 1,
+        rating_type: Literal["A", "W"] = "A",
+        num_living_units: int = 1,
+    ):
         super().__init__()
         if self.num_loads == 1:
             raise LoadGroupNotApplicableException(self.__class__, self.num_loads)
@@ -461,7 +485,13 @@ class C1J2(C1LoadGroup):
 class C1J3(C1LoadGroup):
     load_group = ["j", 3]
 
-    def __init__(self):
+    def __init__(
+        self,
+        rating: float | list[float] | None = None,
+        num_load: int = 1,
+        rating_type: Literal["A", "W"] = "A",
+        num_living_units: int = 1,
+    ):
         super().__init__()
         if self.num_loads == 1:
             raise LoadGroupNotApplicableException(self.__class__, self.num_loads)
