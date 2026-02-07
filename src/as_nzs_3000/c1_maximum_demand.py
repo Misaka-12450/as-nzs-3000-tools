@@ -38,25 +38,16 @@ class _C1LoadGroupMeta(type):
 
 
 class C1LoadGroup(metaclass=_C1LoadGroupMeta):
-    """
-    Class for calculating maximum demand for various load types.
-    Based on AS/NZS 3000 Table C1.
-
-    :cvar list[str | int] load_group: Load group number in list representation.
-        E.g. ['a', 1] for load group (a) (i).
-    :cvar str load_group_description: Description of the load group.
-    :cvar list[type[C1LoadGroup]] load_group_exception:
-        Loads in other load groups and excluded from this load group.
-    :cvar list[type[c1_notes.C1Note]] notes: Notes applicable to the load group.
-
-    :ivar list[float] rating_a: Rating per unit in amperes.
-        Can be a list for different ratings.
-    :ivar int num_living_units: Number of living units per phase.
-    """
-
+    #: Load group number in list representation. E.g. ['a', 1] for load group (a) (i).
     load_group: list[str | int] = []
+
+    #: Description of the load group.
     load_group_description: str = ""
+
+    #: Loads in other load groups and excluded from this load group.
     load_group_exception: list[type[C1LoadGroup]] = []
+
+    #: Notes applicable to the load group.
     notes: list[type[c1_notes.C1Note]] = []
 
     def __init__(
@@ -67,6 +58,9 @@ class C1LoadGroup(metaclass=_C1LoadGroupMeta):
         num_living_units: int = 1,
     ):
         """
+        Class for calculating maximum demand for various load types.
+        Based on AS/NZS 3000 Table C1.
+
         :param float | list[float] rating: Rating per unit.
             Can be a list for different ratings.
         :param int num_load: Number of loads in this load group.
@@ -226,13 +220,18 @@ class C1LoadGroup(metaclass=_C1LoadGroupMeta):
 
 
 class C1A1(C1LoadGroup):
-    """
-    Lighting except (ii) and load group (h) below(4, 6)
-    """
-
     load_group = ["a", 1]
     load_group_description = "Lighting except (ii) and load group (h) below"
     notes = [c1_notes.C1Note4, c1_notes.C1Note6]
+
+    def __init__(
+        self,
+        rating: float | list[float] | None = None,
+        num_load: int = 1,
+        rating_type: Literal["A", "W"] = "A",
+        num_living_units: int = 1,
+    ):
+        super().__init__(rating, num_load, rating_type, num_living_units)
 
     def _calculate_maximum_demand_a_1_living_unit(self) -> float:
         # 3 A for 1 to 20 points + 2 A for each additional 20 points or part thereof
@@ -254,10 +253,6 @@ class C1A1(C1LoadGroup):
 
 
 class C1A2(C1LoadGroup):
-    """
-    Outdoor lighting exceeding a total of 1000 W(6, 7)
-    """
-
     load_group = ["a", 2]
     load_group_description = "Outdoor lighting exceeding a total of 1000 W"
     notes = [c1_notes.C1Note6, c1_notes.C1Note7]
@@ -294,12 +289,6 @@ class C1A2(C1LoadGroup):
 
 
 class C1B1(C1LoadGroup):
-    """
-    Socket-outlets not exceeding 10 A(5, 8). Permanently
-    connected electrical equipment not exceeding 10 A
-    and not included in other load groups(9)
-    """
-
     load_group = ["b", 1]
     load_group_description = (
         "Socket-outlets not exceeding 10 A. Permanently "
@@ -307,6 +296,15 @@ class C1B1(C1LoadGroup):
         "and not included in other load groups"
     )
     notes = [c1_notes.C1Note5, c1_notes.C1Note8, c1_notes.C1Note9]
+
+    def __init__(
+        self,
+        rating: float | list[float] | None = None,
+        num_load: int = 1,
+        rating_type: Literal["A", "W"] = "A",
+        num_living_units: int = 1,
+    ):
+        super().__init__(rating, num_load, rating_type, num_living_units)
 
     def _calculate_maximum_demand_a_1_living_unit(self) -> float:
         # 10 A for 1 to 20 points + 5 A for each additional 20 points or part thereof
@@ -316,25 +314,18 @@ class C1B1(C1LoadGroup):
 
     def _calculate_maximum_demand_a_2_to_5_living_units(self) -> float:
         # 10 A + 5 A per living unit
-        return 10 + 5 * (self.num_living_units)
+        return 10 + 5 * self.num_living_units
 
     def _calculate_maximum_demand_a_6_to_20_living_units(self) -> float:
         # 15 A + 3.75 A per living unit
-        return 15 + 3.75 * (self.num_living_units)
+        return 15 + 3.75 * self.num_living_units
 
     def _calculate_maximum_demand_a_21_plus_living_units(self) -> float:
         # 50 A + 1.9 A per living unit
-        return 50 + 1.9 * (self.num_living_units)
+        return 50 + 1.9 * self.num_living_units
 
 
 class C1B2(C1LoadGroup):
-    """
-    Where the electrical installation includes one or
-    more 15 A socket-outlets, other than socket-outlets
-    provided to supply electrical equipment set out in
-    load groups (c), (d), (e), (f), (g) and (l)(8, 10)
-    """
-
     load_group = ["b", 2]
     load_group_description = (
         "Where the electrical installation includes one or "
@@ -343,6 +334,15 @@ class C1B2(C1LoadGroup):
         "load groups (c), (d), (e), (f), (g) and (l)"
     )
     notes = [c1_notes.C1Note8, c1_notes.C1Note10]
+
+    def __init__(
+        self,
+        rating: float | list[float] | None = None,
+        num_load: int = 1,
+        rating_type: Literal["A", "W"] = "A",
+        num_living_units: int = 1,
+    ):
+        super().__init__(rating, num_load, rating_type, num_living_units)
 
     def _calculate_maximum_demand_a_1_living_unit(self) -> float:
         # 10 A
@@ -362,13 +362,6 @@ class C1B2(C1LoadGroup):
 
 
 class C1B3(C1LoadGroup):
-    """
-    Where the electrical installation includes one or
-    more 20 A socket-outlets, other than socket-outlets
-    provided to supply electrical equipment set out in
-    load groups (c), (d), (e), (f), (g) and (l)(8, 10)
-    """
-
     load_group = ["b", 3]
     load_group_description = (
         "Where the electrical installation includes one or "
@@ -377,6 +370,15 @@ class C1B3(C1LoadGroup):
         "load groups (c), (d), (e), (f), (g) and (l)"
     )
     notes = [c1_notes.C1Note8, c1_notes.C1Note10]
+
+    def __init__(
+        self,
+        rating: float | list[float] | None = None,
+        num_load: int = 1,
+        rating_type: Literal["A", "W"] = "A",
+        num_living_units: int = 1,
+    ):
+        super().__init__(rating, num_load, rating_type, num_living_units)
 
     def _calculate_maximum_demand_a_1_living_unit(self) -> float:
         # 15 A
@@ -396,12 +398,6 @@ class C1B3(C1LoadGroup):
 
 
 class C1C(C1LoadGroup):
-    """
-    Ranges, cooking appliances, laundry equipment or
-    socket-outlets rated at more than 10 A for the
-    connection thereof(8)
-    """
-
     load_group = ["c"]
     load_group_description = """
         Ranges, cooking appliances, laundry equipment or
@@ -409,6 +405,15 @@ class C1C(C1LoadGroup):
         connection thereof
         """
     notes = [c1_notes.C1Note8]
+
+    def __init__(
+        self,
+        rating: float | list[float] | None = None,
+        num_load: int = 1,
+        rating_type: Literal["A", "W"] = "A",
+        num_living_units: int = 1,
+    ):
+        super().__init__(rating, num_load, rating_type, num_living_units)
 
     def _calculate_maximum_demand_a_1_living_unit(self) -> float:
         # 50% connected load
