@@ -169,6 +169,30 @@ class C1A2(C1LoadGroup):
         return self.num * self.rating_a * 0.75
 
 
+class C1B1(C1LoadGroup):
+    """
+    Socket-outlets not exceeding 10 A(5, 8). Permanently
+    connected electrical equipment not exceeding 10 A
+    and not included in other load groups(9)
+    """
+
+    load_group = ["b", 1]
+    load_group_description = (
+        "Socket-outlets not exceeding 10 A. Permanently "
+        "connected electrical equipment not exceeding 10 A "
+        "and not included in other load groups"
+    )
+    rule_1_unit_per_phase = (
+        "10 A for 1 to 20 points + 5 A"
+        "for each additional 20 points"
+        "or part thereof"
+    )
+    notes = [c1_notes.C1Note5, c1_notes.C1Note8, c1_notes.C1Note9]
+
+    def get_maximum_demand_a(self) -> float:
+        if self.num <= 20:
+            return 10
+        return 10 + 5 * (self.num // 20)
 class C1H(C1LoadGroup):
     """
     Not applicable
