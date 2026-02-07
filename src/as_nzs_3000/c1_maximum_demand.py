@@ -152,6 +152,8 @@ class C1LoadGroup(metaclass=_C1LoadGroupMeta):
 
         return s
 
+    # TODO: Add mutator to add/remove loads
+
     @property
     def num_loads(self) -> int:
         """

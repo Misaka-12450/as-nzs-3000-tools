@@ -38,6 +38,7 @@ _LOAD_GROUPS: list[type[C1LoadGroup]] = [
 
 _LOAD_GROUPS_DICT: dict[str, type[C1LoadGroup]] = {}
 for load_group in _LOAD_GROUPS:
+    # TODO: Hide load groups that are not applicable
     _LOAD_GROUPS_DICT[f"{repr(load_group)} {load_group.load_group_description}"] = (
         load_group
     )
@@ -64,6 +65,7 @@ with st.form("add_load_group", clear_on_submit=True):
         label_visibility="collapsed",
     )
 
+    # TODO: Add loads of different rating in one load group
     col1, col2, col3 = st.columns(3, vertical_alignment="bottom")
     with col1:
         num_load = st.number_input("Number of loads", min_value=1, value=1, step=1)
@@ -82,6 +84,7 @@ with st.form("add_load_group", clear_on_submit=True):
     if submitted:
         load_group_cls = _LOAD_GROUPS_DICT[selected_label]
         try:
+            # TODO: Combine with existing entry if same load group
             instance = load_group_cls(
                 rating=rating,
                 num_load=num_load,
