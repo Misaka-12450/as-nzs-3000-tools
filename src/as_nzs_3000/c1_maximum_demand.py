@@ -125,7 +125,7 @@ class C1LoadGroup(metaclass=_C1LoadGroupMeta):
 
 class C1A1(C1LoadGroup):
     """
-    Lighting except (ii) and load group (h) below
+    Lighting except (ii) and load group (h) below(4, 6)
     """
 
     load_group = ["a", 1]
@@ -146,7 +146,7 @@ class C1A1(C1LoadGroup):
 
 class C1A2(C1LoadGroup):
     """
-    Outdoor lighting exceeding a total of 1000 W
+    Outdoor lighting exceeding a total of 1000 W(6, 7)
     """
 
     load_group = ["a", 2]
