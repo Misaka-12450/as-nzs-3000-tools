@@ -31,7 +31,7 @@ class LoadGroupNotApplicableException(Exception):
 class _C1LoadGroupMeta(type):
     def __repr__(cls) -> str:
         if not cls.code:
-            return cls.__name__
+            return ""
         parts = [
             f"({roman.toRoman(part).lower() if isinstance(part, int) else str(part)})"
             for part in cls.code
@@ -230,6 +230,22 @@ class C1LoadGroup(metaclass=_C1LoadGroupMeta):
         :return: Maximum demand in watts.
         """
         return self.maximum_demand_a * _NOMINAL_VOLTAGE
+
+
+class C1Manual(C1LoadGroup):
+    title = "Manually assessed maximum demand"
+
+    def __init__(
+        self,
+        rating: float | list[float] | None = None,
+        num_load: int = 1,
+        rating_type: Literal["A", "W"] = "A",
+        num_living_units: int = 1,
+    ):
+        super().__init__(rating, num_load, rating_type, num_living_units)
+
+    def _calculate_maximum_demand_a(self) -> float:
+        return sum(self.rating_a)
 
 
 class C1A1(C1LoadGroup):

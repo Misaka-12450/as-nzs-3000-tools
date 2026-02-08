@@ -1,5 +1,6 @@
 import streamlit as st
 from as_nzs_3000.c1_maximum_demand import (
+    C1Manual,
     C1A1,
     C1A2,
     C1B1,
@@ -20,6 +21,7 @@ from as_nzs_3000.c1_maximum_demand import (
 )
 
 _LOAD_GROUPS: list[type[C1LoadGroup]] = [
+    C1Manual,
     C1A1,
     C1A2,
     C1B1,
@@ -111,32 +113,32 @@ submitted = st.button(
     "Add load group", icon=":material/add:", type="primary", width="stretch"
 )
 
-    if submitted:
-        load_group_cls = _LOAD_GROUPS_DICT[selected_label]
-        try:
-            # TODO: Combine with existing entry if same load group
-            instance = load_group_cls(
-                rating=rating,
-                num_load=num_load,
-                rating_type=rating_type,
-                num_living_units=num_living_units,
-            )
-            st.session_state.load_entries.append(
-                {
-                    "label": selected_label,
-                    "rating": rating,
-                    "num_load": num_load,
-                    "rating_type": rating_type,
-                    "max_demand_a": instance.maximum_demand_a,
-                    "max_demand_w": instance.maximum_demand_w,
-                }
-            )
-        except IncorrectLoadGroupException as e:
-            st.error(str(e))
-        except LoadGroupNotApplicableException as e:
-            st.error(str(e))
-        except (ValueError, NotImplementedError) as e:
-            st.error(str(e))
+if submitted:
+    load_group_cls = _LOAD_GROUPS_DICT[selected_label]
+    try:
+        # TODO: Combine with existing entry if same load group
+        instance = load_group_cls(
+            rating=rating,
+            num_load=num_load,
+            rating_type=rating_type,
+            num_living_units=num_living_units,
+        )
+        st.session_state.load_entries.append(
+            {
+                "label": selected_label,
+                "rating": rating,
+                "num_load": num_load,
+                "rating_type": rating_type,
+                "max_demand_a": instance.maximum_demand_a,
+                "max_demand_w": instance.maximum_demand_w,
+            }
+        )
+    except IncorrectLoadGroupException as e:
+        st.error(str(e))
+    except LoadGroupNotApplicableException as e:
+        st.error(str(e))
+    except (ValueError, NotImplementedError) as e:
+        st.error(str(e))
 
 st.subheader("Load Groups")
 
