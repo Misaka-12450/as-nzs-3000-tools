@@ -56,7 +56,7 @@ if "load_entries" not in st.session_state:
 
 st.subheader("Add Load Group")
 
-with st.form("add_load_group", clear_on_submit=True):
+with st.container(border=True):
     selected_label = st.selectbox(
         "Load group",
         options=list(_LOAD_GROUPS_DICT.keys()),
@@ -77,7 +77,9 @@ with st.form("add_load_group", clear_on_submit=True):
             label_visibility="collapsed",
         )
 
-    submitted = st.form_submit_button("Add")
+submitted = st.button(
+    "Add load group", icon=":material/add:", type="primary", width="stretch"
+)
 
     if submitted:
         load_group_cls = _LOAD_GROUPS_DICT[selected_label]
