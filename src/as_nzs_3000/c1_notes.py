@@ -19,17 +19,31 @@ class C1Note(metaclass=_C1NoteMeta):
 
 class C1Note1(C1Note):
     NUM = 1
-    NOTE: str = ""
+    NOTE: str = """
+        See Clause 2.2.2 for the circumstances where the maximum demand for consumer
+        mains, submains, and final subcircuits, may be determined by assessment,
+        measurement or limitation.
+        """
 
 
 class C1Note2(C1Note):
     NUM = 2
-    NOTE: str = ""
+    NOTE: str = """
+        For multiphase connections, divide the number of living units by the number of supply
+        phases, e.g. for 16 units on a three-phase supply, 16/3 = 6 units on the heaviest
+        loaded phase (Column 4).
+        """
 
 
 class C1Note3(C1Note):
     NUM = 3
-    NOTE: str = ""
+    NOTE: str = """
+        Where only a portion of the number of units in a multiple domestic electrical
+        installation is equipped with permanently connected or fixed appliances, such as
+        electric cooking ranges or space heating equipment, the number of appliances in
+        each category is divided over the number of phases, and the maximum demand
+        determined as shown in Paragraph C2.3.2.3.
+        """
 
 
 class C1Note4(C1Note):
@@ -95,7 +109,11 @@ class C1Note9(C1Note):
 
 class C1Note10(C1Note):
     NUM = 10
-    NOTE: str = ""
+    NOTE: str = """
+        Where an electrical installation contains 15 A or 20 A socket-outlets covered by load
+        group (b)(ii) or (b)(iii), the base loading of load group (b) is increased by 10 A or 15 A
+        respectively. If both 15 A and 20 A socket-outlets are installed, the increase is 15 A.
+        """
 
 
 class C1Note11(C1Note):
@@ -109,14 +127,24 @@ class C1Note11(C1Note):
 
 class C1Note12(C1Note):
     NUM = 12
-    NOTE: str = ""
+    NOTE: str = """
+        Instantaneous water heaters including ‘quick recovery’ heaters having element
+        ratings greater than 100 W/L.
+        """
 
 
 class C1Note13(C1Note):
     NUM = 13
-    NOTE: str = ""
+    NOTE: str = """
+        Storage-type water heaters, including ‘quick recovery’ heaters not covered by
+        Note 12.
+        """
 
 
 class C1Note14(C1Note):
     NUM = 14
-    NOTE: str = ""
+    NOTE: str = """
+        This load group is not applicable to socket-outlets installed in communal areas but
+        connected to the individual living units. Such socket-outlets should be included in
+        load group (b).
+        """
