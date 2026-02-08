@@ -758,6 +758,24 @@ LoadGroupB3.exceptions = [
     LoadGroupL,
 ]
 LoadGroupI.exceptions = [LoadGroupJ1, LoadGroupJ2, LoadGroupJ3, LoadGroupJ4, LoadGroupL]
+LoadGroupM.exceptions = [
+    LoadGroupA1,
+    LoadGroupA2,
+    LoadGroupB1,
+    LoadGroupB2,
+    LoadGroupB3,
+    LoadGroupC,
+    LoadGroupD,
+    LoadGroupE,
+    LoadGroupF,
+    LoadGroupG,
+    LoadGroupH,
+    LoadGroupJ1,
+    LoadGroupJ2,
+    LoadGroupJ3,
+    LoadGroupJ4,
+    LoadGroupL,
+]
 
 
 __all__ = [
