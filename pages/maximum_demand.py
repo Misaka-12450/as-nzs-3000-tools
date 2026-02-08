@@ -37,11 +37,9 @@ _LOAD_GROUPS: list[type[C1LoadGroup]] = [
 ]
 
 _LOAD_GROUPS_DICT: dict[str, type[C1LoadGroup]] = {}
-for load_group in _LOAD_GROUPS:
+for lg in _LOAD_GROUPS:
     # TODO: Hide load groups that are not applicable
-    _LOAD_GROUPS_DICT[f"{repr(load_group)} {load_group.load_group_description}"] = (
-        load_group
-    )
+    _LOAD_GROUPS_DICT[f"{repr(lg)} {lg.title}"] = lg
 
 st.header("AS/NZS 3000 Maximum Demand")
 st.caption("Table C1 — Domestic maximum demand calculation")

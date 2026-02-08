@@ -28,24 +28,27 @@ class LoadGroupNotApplicableException(Exception):
 
 class _C1LoadGroupMeta(type):
     def __repr__(cls) -> str:
-        if not cls.load_group:
+        if not cls.code:
             return cls.__name__
         parts = [
             f"({'i' * part if isinstance(part, int) else str(part)})"
-            for part in cls.load_group
+            for part in cls.code
         ]
         return " ".join(parts)
 
 
 class C1LoadGroup(metaclass=_C1LoadGroupMeta):
     #: Load group number in list representation. E.g. ['a', 1] for load group (a) (i).
-    load_group: list[str | int] = []
+    code: list[str | int] = []
+
+    #: Short title of the load group.
+    title: str = ""
 
     #: Description of the load group.
-    load_group_description: str = ""
+    description: str = ""
 
     #: Loads in other load groups and excluded from this load group.
-    load_group_exception: list[type[C1LoadGroup]] = []
+    exceptions: list[type[C1LoadGroup]] = []
 
     #: Notes applicable to the load group.
     notes: list[type[c1_notes.C1Note]] = []
@@ -236,8 +239,9 @@ class C1LoadGroup(metaclass=_C1LoadGroupMeta):
 
 
 class C1A1(C1LoadGroup):
-    load_group = ["a", 1]
-    load_group_description = "Lighting except (ii) and load group (h) below"
+    code = ["a", 1]
+    title = "Lighting"
+    description = "Lighting except (ii) and load group (h) below"
     notes = [c1_notes.C1Note4, c1_notes.C1Note6]
 
     def __init__(
@@ -253,7 +257,7 @@ class C1A1(C1LoadGroup):
         # 3 A for 1 to 20 points + 2 A for each additional 20 points or part thereof
         if self.num_loads <= 20:
             return 3
-        return 3 + 2 * (self.num_loads // 20)
+        return 3 + 2 * ((self.num_loads - 1) // 20)
 
     def _calculate_maximum_demand_a_2_to_5_living_units(self):
         # 6 A
@@ -269,8 +273,9 @@ class C1A1(C1LoadGroup):
 
 
 class C1A2(C1LoadGroup):
-    load_group = ["a", 2]
-    load_group_description = "Outdoor lighting exceeding a total of 1000 W"
+    code = ["a", 2]
+    title = "Outdoor lighting"
+    description = "Outdoor lighting exceeding a total of 1000 W"
     notes = [c1_notes.C1Note6, c1_notes.C1Note7]
 
     def __init__(
@@ -297,8 +302,9 @@ class C1A2(C1LoadGroup):
 
 
 class C1B1(C1LoadGroup):
-    load_group = ["b", 1]
-    load_group_description = (
+    code = ["b", 1]
+    title = "Socket-outlets < 10 A"
+    description = (
         "Socket-outlets not exceeding 10 A. Permanently "
         "connected electrical equipment not exceeding 10 A "
         "and not included in other load groups"
@@ -334,8 +340,9 @@ class C1B1(C1LoadGroup):
 
 
 class C1B2(C1LoadGroup):
-    load_group = ["b", 2]
-    load_group_description = (
+    code = ["b", 2]
+    title = "Socket-outlets 15 A"
+    description = (
         "Where the electrical installation includes one or "
         "more 15 A socket-outlets, other than socket-outlets "
         "provided to supply electrical equipment set out in "
@@ -358,8 +365,9 @@ class C1B2(C1LoadGroup):
 
 
 class C1B3(C1LoadGroup):
-    load_group = ["b", 3]
-    load_group_description = (
+    code = ["b", 3]
+    title = "Socket-outlets 20 A"
+    description = (
         "Where the electrical installation includes one or "
         "more 20 A socket-outlets, other than socket-outlets "
         "provided to supply electrical equipment set out in "
@@ -382,8 +390,9 @@ class C1B3(C1LoadGroup):
 
 
 class C1C(C1LoadGroup):
-    load_group = ["c"]
-    load_group_description = """
+    code = ["c"]
+    title = "Ranges, cooking appliances, laundry equipment > 10 A"
+    description = """
         Ranges, cooking appliances, laundry equipment or
         socket-outlets rated at more than 10 A for the
         connection thereof
@@ -423,8 +432,9 @@ class C1D(C1LoadGroup):
     connection thereof(8, 11)
     """
 
-    load_group = ["d"]
-    load_group_description = (
+    code = ["d"]
+    title = "Fixed space heating or airconditioning equipment, saunas > 10 A"
+    description = (
         "Fixed space heating or airconditioning equipment, "
         "saunas or socket-outlets rated at more than 10 A for the "
         "connection thereof"
@@ -441,8 +451,9 @@ class C1E(C1LoadGroup):
     Instantaneous water heaters(12)
     """
 
-    load_group = ["e"]
-    load_group_description = "Instantaneous water heaters"
+    code = ["e"]
+    title = "Instantaneous water heaters"
+    description = title
     notes = [c1_notes.C1Note12]
 
     def _calculate_maximum_demand_a_1_living_unit(self) -> float:
@@ -467,8 +478,9 @@ class C1F(C1LoadGroup):
     Storage water heaters(13)
     """
 
-    load_group = ["f"]
-    load_group_description = "Storage water heaters"
+    code = ["f"]
+    title = "Storage water heaters"
+    description = title
     notes = [c1_notes.C1Note13]
 
     def _calculate_maximum_demand_a_1_living_unit(self) -> float:
@@ -493,8 +505,9 @@ class C1G(C1LoadGroup):
     Spa and swimming pool heaters
     """
 
-    load_group = ["g"]
-    load_group_description = "Spa and swimming pool heaters"
+    code = ["g"]
+    title = "Spa and swimming pool heaters"
+    description = title
     notes = [c1_notes.C1Note14]
 
     def __init__(self, rating=None, num_load=1, rating_type="A", num_living_units=1):
@@ -512,8 +525,9 @@ class C1H(C1LoadGroup):
     Communal lighting
     """
 
-    load_group = ["h"]
-    load_group_description = "Communal lighting"
+    code = ["h"]
+    title = "Communal lighting"
+    description = title
     notes = [c1_notes.C1Note6, c1_notes.C1Note7]
     _min_num_units = 2
 
@@ -540,8 +554,9 @@ class C1I(C1LoadGroup):
     exceeding 10 A
     """
 
-    load_group = ["i"]
-    load_group_description = (
+    code = ["i"]
+    title = "Socket-outlets and permanently connected electrical equipment < 10 A"
+    description = (
         "Socket-outlets not included in load groups (j) and (m) "
         "below. Permanently connected electrical equipment not "
         "exceeding 10 A"
@@ -571,8 +586,9 @@ class C1J1(C1LoadGroup):
     machines, wash boilers(8)
     """
 
-    load_group = ["j", 1]
-    load_group_description = (
+    code = ["j", 1]
+    title = "Clothes dryers, water heaters, self-heating washing machines, wash boilers > 10 A"
+    description = (
         "Appliances rated at more than 10 A and socket-outlets "
         "for the connection thereof — "
         "Clothes dryers, water heaters, "
@@ -597,8 +613,9 @@ class C1J1(C1LoadGroup):
 
 
 class C1J2(C1LoadGroup):
-    load_group = ["j", 2]
-    load_group_description = (
+    code = ["j", 2]
+    title = "Fixed space heating, airconditioning equipment, saunas > 10 A"
+    description = (
         "Appliances rated at more than 10 A and socket-outlets "
         "for the connection thereof — "
         "Fixed space heating, airconditioning equipment, "
@@ -623,8 +640,9 @@ class C1J2(C1LoadGroup):
 
 
 class C1J3(C1LoadGroup):
-    load_group = ["j", 3]
-    load_group_description = (
+    code = ["j", 3]
+    title = "Spa and swimming pool heaters > 10 A"
+    description = (
         "Appliances rated at more than 10 A and socket-outlets "
         "for the connection thereof — "
         "Spa and swimming pool heaters"
@@ -647,8 +665,9 @@ class C1J3(C1LoadGroup):
 
 
 class C1J4(C1LoadGroup):
-    load_group = ["j", 4]
-    load_group_description = (
+    code = ["j", 4]
+    title = "Charging equipment associated with electric vehicles"
+    description = (
         "Appliances rated at more than 10 A and socket-outlets "
         "for the connection thereof — "
         "Charging equipment associated with electric vehicles"
@@ -672,24 +691,25 @@ class C1J4(C1LoadGroup):
 
 
 class C1K(C1LoadGroup):
-    load_group = ["k"]
-    load_group_description = "Lifts"
+    code = ["k"]
+    description = "Lifts"
 
 
 class C1L(C1LoadGroup):
-    load_group = ["l"]
-    load_group_description = "Motors"
+    code = ["l"]
+    description = "Motors"
 
 
 class C1M(C1LoadGroup):
-    load_group = ["m"]
-    load_group_description = (
+    code = ["m"]
+    title = "Appliances other than those set out in load groups (a) to (l) above"
+    description = (
         "Appliances, including socket-outlets other than those set"
         "out in load groups (a) to (l) above, e.g. pottery kilns,"
         "welding machines, radio transmitters, X-ray equipment"
         "and the like"
     )
-    load_group_exception = [
+    exceptions = [
         C1A1,
         C1A2,
         C1B1,
@@ -710,6 +730,6 @@ class C1M(C1LoadGroup):
 
 
 # Resolve forward references
-C1A1.load_group_exception = [C1A2, C1H]
-C1B2.load_group_exception = [C1C, C1D, C1E, C1F, C1G, C1L]
-C1B3.load_group_exception = [C1C, C1D, C1E, C1F, C1G, C1L]
+C1A1.exceptions = [C1A2, C1H]
+C1B2.exceptions = [C1C, C1D, C1E, C1F, C1G, C1L]
+C1B3.exceptions = [C1C, C1D, C1E, C1F, C1G, C1L]
