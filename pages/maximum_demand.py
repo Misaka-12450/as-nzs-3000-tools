@@ -64,18 +64,36 @@ with st.container(border=True):
     )
 
     # TODO: Add loads of different rating in one load group
-    col1, col2, col3 = st.columns(3, vertical_alignment="bottom")
-    with col1:
-        num_load = st.number_input("Number of loads", min_value=1, value=1, step=1)
-    with col2:
-        rating = st.number_input("Rating per load", min_value=1, value=10, step=1)
-    with col3:
-        rating_type = st.selectbox(
-            "Unit",
-            options=["A", "W"],
-            format_func=lambda x: "Amperes" if x == "A" else "Watts",
-            label_visibility="collapsed",
-        )
+    for i in range(num_loads):
+        col1, col2, col3, col4 = st.columns([3, 3, 3, 1], vertical_alignment="bottom")
+        with col1:
+            num_load = st.number_input(
+                "Number of loads", min_value=1, value=1, step=1, key=f"num_load_{i}"
+            )
+        with col2:
+            rating = st.number_input(
+                "Rating per load", min_value=1, value=10, step=1, key=f"rating_{i}"
+            )
+        with col3:
+            rating_type = st.selectbox(
+                "Unit",
+                options=["A", "W"],
+                format_func=lambda x: "Amperes" if x == "A" else "Watts",
+                key=f"load_row_{i}",
+                label_visibility="collapsed",
+            )
+        with col4:
+            st.button(
+                "",
+                key=f"delete_{i}",
+                icon=":material/delete:",
+                width="stretch",
+                disabled=not (num_loads - 1),
+            )
+
+    if st.button("More", key=f"more_loads_{i}", icon=":material/add:"):
+        st.session_state["num_loads"] += 1
+        st.rerun()
 
 submitted = st.button(
     "Add load group", icon=":material/add:", type="primary", width="stretch"
