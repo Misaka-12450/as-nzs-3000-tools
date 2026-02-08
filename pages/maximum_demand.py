@@ -63,6 +63,18 @@ with st.container(border=True):
         label_visibility="collapsed",
     )
 
+    load_group_cls = _LOAD_GROUPS_DICT[selected_label]
+    st.markdown(load_group_cls.description.replace("\n", " "))
+
+    s: str = str(load_group_cls)
+    if s:
+        with st.expander("**Exceptions and Notes**"):
+            st.markdown(s)
+
+    if not st.session_state.get("num_loads"):
+        st.session_state.num_loads = 1
+    num_loads = st.session_state.num_loads
+
     # TODO: Add loads of different rating in one load group
     for i in range(num_loads):
         col1, col2, col3, col4 = st.columns([3, 3, 3, 1], vertical_alignment="bottom")
