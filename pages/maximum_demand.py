@@ -1,44 +1,17 @@
 import streamlit as st
-from as_nzs_3000.c1_maximum_demand import (
-    C1Manual,
-    C1A1,
-    C1A2,
-    C1B1,
-    C1B2,
-    C1B3,
-    C1C,
-    C1D,
-    C1E,
-    C1F,
-    C1H,
-    C1I,
-    C1J1,
-    C1J2,
-    C1J4,
-    C1LoadGroup,
-    IncorrectLoadGroupException,
-    LoadGroupNotApplicableException,
-)
+import inspect
+import as_nzs_3000.c1_maximum_demand as c1
 
-_LOAD_GROUPS: list[type[C1LoadGroup]] = [
-    C1Manual,
-    C1A1,
-    C1A2,
-    C1B1,
-    C1B2,
-    C1B3,
-    C1C,
-    C1D,
-    C1E,
-    C1F,
-    C1H,
-    C1I,
-    C1J1,
-    C1J2,
-    C1J4,
+# Dynamically get all C1LoadGroup subclasses
+_LOAD_GROUPS: list[type[c1.LoadGroup]] = [
+    getattr(c1, name)
+    for name in c1.__all__
+    if inspect.isclass(getattr(c1, name))
+    and issubclass(getattr(c1, name), c1.LoadGroup)
+    and getattr(c1, name) is not c1.LoadGroup
 ]
 
-_LOAD_GROUPS_DICT: dict[str, type[C1LoadGroup]] = {}
+_LOAD_GROUPS_DICT: dict[str, type[c1.LoadGroup]] = {}
 for lg in _LOAD_GROUPS:
     # TODO: Hide load groups that are not applicable
     _LOAD_GROUPS_DICT[f"{repr(lg)} {lg.title}"] = lg
@@ -133,9 +106,9 @@ if submitted:
                 "max_demand_w": instance.maximum_demand_w,
             }
         )
-    except IncorrectLoadGroupException as e:
+    except c1.IncorrectLoadGroupException as e:
         st.error(str(e))
-    except LoadGroupNotApplicableException as e:
+    except c1.LoadGroupNotApplicableException as e:
         st.error(str(e))
     except (ValueError, NotImplementedError) as e:
         st.error(str(e))
