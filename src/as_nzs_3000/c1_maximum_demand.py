@@ -346,7 +346,7 @@ class LoadGroupA2(LoadGroup):
 
 class LoadGroupB1(LoadGroup):
     code = ["b", 1]
-    title = "Socket-outlets < 10 A"
+    title = "Socket-outlets <= 10 A"
     description = (
         "Socket-outlets not exceeding 10 A. Permanently "
         "connected electrical equipment not exceeding 10 A "
@@ -598,7 +598,7 @@ class LoadGroupI(LoadGroup):
     """
 
     code = ["i"]
-    title = "Socket-outlets and permanently connected electrical equipment < 10 A"
+    title = "Socket-outlets and permanently connected electrical equipment <= 10 A"
     description = (
         "Socket-outlets not included in load groups (j) and (m) "
         "below. Permanently connected electrical equipment not "
@@ -789,7 +789,7 @@ _LOAD_GROUP_B_EXCEPTIONS = [
 LoadGroupB2.exceptions = _LOAD_GROUP_B_EXCEPTIONS
 LoadGroupB3.exceptions = _LOAD_GROUP_B_EXCEPTIONS
 LoadGroupI.exceptions = [LoadGroupJ1, LoadGroupJ2, LoadGroupJ3, LoadGroupJ4, LoadGroupL]
-LoadGroupM.exceptions.extend(lg for lg in _ALL_LOAD_GROUPS if lg != LoadGroupM)
+LoadGroupM.exceptions = [lg for lg in _ALL_LOAD_GROUPS if lg != LoadGroupM]
 
 
 __all__ = [
