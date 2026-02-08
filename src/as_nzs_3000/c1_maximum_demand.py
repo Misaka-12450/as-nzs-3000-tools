@@ -79,6 +79,14 @@ class LoadGroup(metaclass=_LoadGroupMeta):
     #: Minimum number of living units required for this load group.
     _min_num_units: int = 0
 
+    def __repr__(self) -> str:
+        """String representation of the instance delegates to the class."""
+        return repr(self.__class__)
+
+    def __str__(self) -> str:
+        """String representation of the instance delegates to the class."""
+        return str(self.__class__)
+
     def __init__(
         self,
         rating: float | list[float] | None = None,
@@ -235,6 +243,22 @@ class LoadGroup(metaclass=_LoadGroupMeta):
         :return: Maximum demand in watts.
         """
         return self.maximum_demand_a * _NOMINAL_VOLTAGE
+
+    @classmethod
+    def get_exceptions(cls) -> str:
+        """
+        Get exceptions as a formatted string.
+        :return: Exceptions as a string.
+        """
+        if not cls.exceptions:
+            return ""
+
+        s: str = ""
+        for excepted_load_group in cls.exceptions:
+            s = cls._add_strings(
+                s, f"{repr(excepted_load_group)} {excepted_load_group.description}"
+            )
+        return s
 
 
 class LoadGroupManual(LoadGroup):
