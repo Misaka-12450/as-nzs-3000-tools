@@ -31,16 +31,20 @@ if "load_entries" not in st.session_state:
 
 st.subheader("Add Load Group")
 
+# Load group selection and input
 with st.container(border=True):
+    # Select load group
     selected_label = st.selectbox(
         "Load group",
         options=list(_LOAD_GROUPS_DICT.keys()),
         label_visibility="collapsed",
     )
 
+    # Display load group description
     load_group_cls = _LOAD_GROUPS_DICT[selected_label]
     st.markdown(load_group_cls.description.replace("\n", " "))
 
+    # Display exceptions and notes
     s: str = str(load_group_cls)
     if s:
         with st.expander("**Exceptions and Notes**"):
@@ -50,6 +54,7 @@ with st.container(border=True):
         st.session_state.num_loads = 1
     num_loads = st.session_state.num_loads
 
+    # Add number of load and rating
     # TODO: Add loads of different rating in one load group
     for i in range(num_loads):
         col1, col2, col3, col4 = st.columns([3, 3, 3, 1], vertical_alignment="bottom")
@@ -78,10 +83,12 @@ with st.container(border=True):
                 disabled=not (num_loads - 1),
             )
 
+    # Add more loads button
     if st.button("More", key=f"more_loads_{i}", icon=":material/add:"):
         st.session_state["num_loads"] += 1
         st.rerun()
 
+# Submit load group
 submitted = st.button(
     "Add load group", icon=":material/add:", type="primary", width="stretch"
 )
@@ -116,7 +123,9 @@ if submitted:
 
 st.subheader("Load Groups")
 
+# Display added load groups
 if st.session_state.load_entries:
+    # Display each load group entry
     for i, entry in enumerate(st.session_state.load_entries):
         col_info, col_demand, col_remove = st.columns([5, 2, 1])
         with col_info:
@@ -137,11 +146,13 @@ if st.session_state.load_entries:
                 st.session_state.load_entries.pop(i)
                 st.rerun()
 
+    # Display total maximum demand
     st.divider()
     total_a = sum(e["max_demand_a"] for e in st.session_state.load_entries)
     total_w = sum(e["max_demand_w"] for e in st.session_state.load_entries)
     st.metric("Total Maximum Demand", f"{total_a:.2f} A ({total_w:.0f} W)")
 
+    # Clear all button
     if st.button("Clear all"):
         st.session_state.load_entries.clear()
         st.rerun()
