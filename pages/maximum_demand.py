@@ -102,6 +102,7 @@ if submitted:
                 "rating": rating,
                 "num_load": num_load,
                 "rating_type": rating_type,
+                "total_rating": instance.total_rating_a,
                 "max_demand_a": instance.maximum_demand_a,
                 "max_demand_w": instance.maximum_demand_w,
             }
@@ -117,12 +118,13 @@ st.subheader("Load Groups")
 
 if st.session_state.load_entries:
     for i, entry in enumerate(st.session_state.load_entries):
-        col_info, col_demand, col_remove = st.columns([4, 3, 1])
+        col_info, col_demand, col_remove = st.columns([5, 2, 1])
         with col_info:
             unit = "A" if entry["rating_type"] == "A" else "W"
             st.markdown(
-                f"{entry['label']}  \n"
-                f"**{entry['num_load']} × {entry['rating']} {unit}**"
+                f"**{entry['label']}**  \n"
+                f"{entry['num_load']} × {entry['rating']} {unit} = "
+                f"**{entry['total_rating']:.2f}".rstrip("0").rstrip(".") + " A**"
             )
         with col_demand:
             st.metric(
