@@ -2,6 +2,8 @@ from __future__ import annotations
 
 from typing import Literal
 
+import roman
+
 from as_nzs_3000 import c1_notes
 
 _NOMINAL_VOLTAGE = 230
@@ -31,7 +33,7 @@ class _C1LoadGroupMeta(type):
         if not cls.code:
             return cls.__name__
         parts = [
-            f"({'i' * part if isinstance(part, int) else str(part)})"
+            f"({roman.toRoman(part).lower() if isinstance(part, int) else str(part)})"
             for part in cls.code
         ]
         return " ".join(parts)
