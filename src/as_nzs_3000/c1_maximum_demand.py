@@ -719,46 +719,9 @@ class LoadGroupM(LoadGroup):
         "welding machines, radio transmitters, X-ray equipment"
         "and the like"
     )
-    exceptions = [
-        LoadGroupA1,
-        LoadGroupA2,
-        LoadGroupB1,
-        LoadGroupB2,
-        LoadGroupB3,
-        LoadGroupC,
-        LoadGroupD,
-        LoadGroupE,
-        LoadGroupF,
-        LoadGroupG,
-        LoadGroupH,
-        LoadGroupJ1,
-        LoadGroupJ2,
-        LoadGroupJ3,
-        LoadGroupJ4,
-        LoadGroupL,
-    ]
 
 
-# Resolve forward references
-LoadGroupA1.exceptions = [LoadGroupA2, LoadGroupH]
-LoadGroupB2.exceptions = [
-    LoadGroupC,
-    LoadGroupD,
-    LoadGroupE,
-    LoadGroupF,
-    LoadGroupG,
-    LoadGroupL,
-]
-LoadGroupB3.exceptions = [
-    LoadGroupC,
-    LoadGroupD,
-    LoadGroupE,
-    LoadGroupF,
-    LoadGroupG,
-    LoadGroupL,
-]
-LoadGroupI.exceptions = [LoadGroupJ1, LoadGroupJ2, LoadGroupJ3, LoadGroupJ4, LoadGroupL]
-LoadGroupM.exceptions = [
+_ALL_LOAD_GROUPS = [
     LoadGroupA1,
     LoadGroupA2,
     LoadGroupB1,
@@ -770,36 +733,35 @@ LoadGroupM.exceptions = [
     LoadGroupF,
     LoadGroupG,
     LoadGroupH,
+    LoadGroupI,
     LoadGroupJ1,
     LoadGroupJ2,
     LoadGroupJ3,
     LoadGroupJ4,
+    LoadGroupK,
+    LoadGroupL,
+    LoadGroupM,
+]
+
+# Resolve forward references
+LoadGroupA1.exceptions = [LoadGroupA2, LoadGroupH]
+_LOAD_GROUP_B_EXCEPTIONS = [
+    LoadGroupC,
+    LoadGroupD,
+    LoadGroupE,
+    LoadGroupF,
+    LoadGroupG,
     LoadGroupL,
 ]
+LoadGroupB2.exceptions = _LOAD_GROUP_B_EXCEPTIONS
+LoadGroupB3.exceptions = _LOAD_GROUP_B_EXCEPTIONS
+LoadGroupI.exceptions = [LoadGroupJ1, LoadGroupJ2, LoadGroupJ3, LoadGroupJ4, LoadGroupL]
+LoadGroupM.exceptions.extend(lg for lg in _ALL_LOAD_GROUPS if lg != LoadGroupM)
 
 
 __all__ = [
     "LoadGroup",
-    "LoadGroupManual",
-    "LoadGroupA1",
-    "LoadGroupA2",
-    "LoadGroupB1",
-    "LoadGroupB2",
-    "LoadGroupB3",
-    "LoadGroupC",
-    "LoadGroupD",
-    "LoadGroupE",
-    "LoadGroupF",
-    "LoadGroupG",
-    "LoadGroupH",
-    "LoadGroupI",
-    "LoadGroupJ1",
-    "LoadGroupJ2",
-    "LoadGroupJ3",
-    "LoadGroupJ4",
-    "LoadGroupK",
-    "LoadGroupL",
-    "LoadGroupM",
     "IncorrectLoadGroupException",
     "LoadGroupNotApplicableException",
 ]
+__all__ += [lg.__name__ for lg in _ALL_LOAD_GROUPS]
