@@ -19,14 +19,17 @@ class C1Note(metaclass=_C1NoteMeta):
 
 class C1Note1(C1Note):
     NUM = 1
+    NOTE: str = ""
 
 
 class C1Note2(C1Note):
     NUM = 2
+    NOTE: str = ""
 
 
 class C1Note3(C1Note):
     NUM = 3
+    NOTE: str = ""
 
 
 class C1Note4(C1Note):
@@ -92,6 +95,7 @@ class C1Note9(C1Note):
 
 class C1Note10(C1Note):
     NUM = 10
+    NOTE: str = ""
 
 
 class C1Note11(C1Note):
@@ -105,11 +109,14 @@ class C1Note11(C1Note):
 
 class C1Note12(C1Note):
     NUM = 12
+    NOTE: str = ""
 
 
 class C1Note13(C1Note):
     NUM = 13
+    NOTE: str = ""
 
 
 class C1Note14(C1Note):
     NUM = 14
+    NOTE: str = ""
