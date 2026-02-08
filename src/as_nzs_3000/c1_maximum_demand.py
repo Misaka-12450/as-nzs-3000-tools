@@ -10,7 +10,7 @@ _NOMINAL_VOLTAGE = 230
 
 
 class IncorrectLoadGroupException(Exception):
-    def __init__(self, correct_group: type[C1LoadGroup], reason: str = ""):
+    def __init__(self, correct_group: type[LoadGroup], reason: str = ""):
         self.correct_group = correct_group
         msg = f"Use {repr(correct_group)} ({correct_group.__name__}) instead."
         if reason:
@@ -19,7 +19,7 @@ class IncorrectLoadGroupException(Exception):
 
 
 class LoadGroupNotApplicableException(Exception):
-    def __init__(self, load_group: type[C1LoadGroup], num: int = 1):
+    def __init__(self, load_group: type[LoadGroup], num: int = 1):
         self.load_group = load_group
         msg = (
             f"{repr(load_group)} ({load_group.__name__}) "
@@ -28,7 +28,7 @@ class LoadGroupNotApplicableException(Exception):
         super().__init__(msg)
 
 
-class _C1LoadGroupMeta(type):
+class _LoadGroupMeta(type):
     def __repr__(cls) -> str:
         if not cls.code:
             return ""
@@ -60,7 +60,7 @@ class _C1LoadGroupMeta(type):
             raise LoadGroupNotApplicableException(cls, num)
 
 
-class C1LoadGroup(metaclass=_C1LoadGroupMeta):
+class LoadGroup(metaclass=_LoadGroupMeta):
     #: Load group number in list representation. E.g. ['a', 1] for load group (a) (i).
     code: list[str | int] = []
 
@@ -71,7 +71,7 @@ class C1LoadGroup(metaclass=_C1LoadGroupMeta):
     description: str = ""
 
     #: Loads in other load groups and excluded from this load group.
-    exceptions: list[type[C1LoadGroup]] = []
+    exceptions: list[type[LoadGroup]] = []
 
     #: Notes applicable to the load group.
     notes: list[type[c1_notes.C1Note]] = []
@@ -232,7 +232,7 @@ class C1LoadGroup(metaclass=_C1LoadGroupMeta):
         return self.maximum_demand_a * _NOMINAL_VOLTAGE
 
 
-class C1Manual(C1LoadGroup):
+class LoadGroupManual(LoadGroup):
     title = "Manually assessed maximum demand"
 
     def __init__(
@@ -248,7 +248,7 @@ class C1Manual(C1LoadGroup):
         return sum(self.rating_a)
 
 
-class C1A1(C1LoadGroup):
+class LoadGroupA1(LoadGroup):
     code = ["a", 1]
     title = "Lighting"
     description = "Lighting except (ii) and load group (h) below"
@@ -282,7 +282,7 @@ class C1A1(C1LoadGroup):
         return 0.5 * self.num_living_units
 
 
-class C1A2(C1LoadGroup):
+class LoadGroupA2(LoadGroup):
     code = ["a", 2]
     title = "Outdoor lighting"
     description = "Outdoor lighting exceeding a total of 1000 W"
@@ -298,7 +298,7 @@ class C1A2(C1LoadGroup):
         super().__init__(rating, num_load, rating_type, num_living_units)
         if (sum_rating_w := sum(self.rating_w)) < 1000:
             raise IncorrectLoadGroupException(
-                C1A1,
+                LoadGroupA1,
                 (f"Total wattage ({sum_rating_w} W) does not exceed" " 1000 W."),
             )
 
@@ -311,7 +311,7 @@ class C1A2(C1LoadGroup):
         return sum(self.rating_a) * 0.75
 
 
-class C1B1(C1LoadGroup):
+class LoadGroupB1(LoadGroup):
     code = ["b", 1]
     title = "Socket-outlets < 10 A"
     description = (
@@ -349,7 +349,7 @@ class C1B1(C1LoadGroup):
         return 50 + 1.9 * self.num_living_units
 
 
-class C1B2(C1LoadGroup):
+class LoadGroupB2(LoadGroup):
     code = ["b", 2]
     title = "Socket-outlets 15 A"
     description = (
@@ -374,7 +374,7 @@ class C1B2(C1LoadGroup):
         return 10
 
 
-class C1B3(C1LoadGroup):
+class LoadGroupB3(LoadGroup):
     code = ["b", 3]
     title = "Socket-outlets 20 A"
     description = (
@@ -399,7 +399,7 @@ class C1B3(C1LoadGroup):
         return 15
 
 
-class C1C(C1LoadGroup):
+class LoadGroupC(LoadGroup):
     code = ["c"]
     title = "Ranges, cooking appliances, laundry equipment > 10 A"
     description = """
@@ -435,7 +435,7 @@ class C1C(C1LoadGroup):
         return 2.8 * self.num_living_units
 
 
-class C1D(C1LoadGroup):
+class LoadGroupD(LoadGroup):
     """
     Fixed space heating or airconditioning equipment,
     saunas or socket-outlets rated at more than 10 A for the
@@ -456,7 +456,7 @@ class C1D(C1LoadGroup):
         return sum(self.rating_a) * 0.75
 
 
-class C1E(C1LoadGroup):
+class LoadGroupE(LoadGroup):
     """
     Instantaneous water heaters(12)
     """
@@ -483,7 +483,7 @@ class C1E(C1LoadGroup):
         return 100 + 0.8 * self.num_living_units
 
 
-class C1F(C1LoadGroup):
+class LoadGroupF(LoadGroup):
     """
     Storage water heaters(13)
     """
@@ -510,7 +510,7 @@ class C1F(C1LoadGroup):
         return 100 + 0.8 * self.num_living_units
 
 
-class C1G(C1LoadGroup):
+class LoadGroupG(LoadGroup):
     """
     Spa and swimming pool heaters
     """
@@ -530,7 +530,7 @@ class C1G(C1LoadGroup):
         # plus 25% of the remainder
 
 
-class C1H(C1LoadGroup):
+class LoadGroupH(LoadGroup):
     """
     Communal lighting
     """
@@ -555,7 +555,7 @@ class C1H(C1LoadGroup):
         return sum(self.rating_a)
 
 
-class C1I(C1LoadGroup):
+class LoadGroupI(LoadGroup):
     """
     Socket-outlets not included in load groups (j) and (m)
     below(8, 10, 14)
@@ -588,7 +588,7 @@ class C1I(C1LoadGroup):
         return min(2 * self.num_loads, 15)
 
 
-class C1J1(C1LoadGroup):
+class LoadGroupJ1(LoadGroup):
     """
     Appliances rated at more than 10 A and socket-outlets
     for the connection thereof
@@ -622,7 +622,7 @@ class C1J1(C1LoadGroup):
         return sum(self.rating_a) * 0.5
 
 
-class C1J2(C1LoadGroup):
+class LoadGroupJ2(LoadGroup):
     code = ["j", 2]
     title = "Fixed space heating, airconditioning equipment, saunas > 10 A"
     description = (
@@ -649,7 +649,7 @@ class C1J2(C1LoadGroup):
         return sum(self.rating_a) * 0.75
 
 
-class C1J3(C1LoadGroup):
+class LoadGroupJ3(LoadGroup):
     code = ["j", 3]
     title = "Spa and swimming pool heaters > 10 A"
     description = (
@@ -674,7 +674,7 @@ class C1J3(C1LoadGroup):
         # plus 25% of the remainder
 
 
-class C1J4(C1LoadGroup):
+class LoadGroupJ4(LoadGroup):
     code = ["j", 4]
     title = "Charging equipment associated with electric vehicles"
     description = (
@@ -700,17 +700,17 @@ class C1J4(C1LoadGroup):
         return sum(self.rating_a) * 0.75
 
 
-class C1K(C1LoadGroup):
+class LoadGroupK(LoadGroup):
     code = ["k"]
     description = "Lifts"
 
 
-class C1L(C1LoadGroup):
+class LoadGroupL(LoadGroup):
     code = ["l"]
     description = "Motors"
 
 
-class C1M(C1LoadGroup):
+class LoadGroupM(LoadGroup):
     code = ["m"]
     title = "Appliances other than those set out in load groups (a) to (l) above"
     description = (
@@ -720,27 +720,68 @@ class C1M(C1LoadGroup):
         "and the like"
     )
     exceptions = [
-        C1A1,
-        C1A2,
-        C1B1,
-        C1B2,
-        C1B3,
-        C1C,
-        C1D,
-        C1E,
-        C1F,
-        C1G,
-        C1H,
-        C1J1,
-        C1J2,
-        C1J3,
-        C1J4,
-        C1L,
+        LoadGroupA1,
+        LoadGroupA2,
+        LoadGroupB1,
+        LoadGroupB2,
+        LoadGroupB3,
+        LoadGroupC,
+        LoadGroupD,
+        LoadGroupE,
+        LoadGroupF,
+        LoadGroupG,
+        LoadGroupH,
+        LoadGroupJ1,
+        LoadGroupJ2,
+        LoadGroupJ3,
+        LoadGroupJ4,
+        LoadGroupL,
     ]
 
 
 # Resolve forward references
-C1A1.exceptions = [C1A2, C1H]
-C1B2.exceptions = [C1C, C1D, C1E, C1F, C1G, C1L]
-C1B3.exceptions = [C1C, C1D, C1E, C1F, C1G, C1L]
-C1I.exceptions = [C1J1, C1J2, C1J3, C1J4, C1L]
+LoadGroupA1.exceptions = [LoadGroupA2, LoadGroupH]
+LoadGroupB2.exceptions = [
+    LoadGroupC,
+    LoadGroupD,
+    LoadGroupE,
+    LoadGroupF,
+    LoadGroupG,
+    LoadGroupL,
+]
+LoadGroupB3.exceptions = [
+    LoadGroupC,
+    LoadGroupD,
+    LoadGroupE,
+    LoadGroupF,
+    LoadGroupG,
+    LoadGroupL,
+]
+LoadGroupI.exceptions = [LoadGroupJ1, LoadGroupJ2, LoadGroupJ3, LoadGroupJ4, LoadGroupL]
+
+
+__all__ = [
+    "LoadGroup",
+    "LoadGroupManual",
+    "LoadGroupA1",
+    "LoadGroupA2",
+    "LoadGroupB1",
+    "LoadGroupB2",
+    "LoadGroupB3",
+    "LoadGroupC",
+    "LoadGroupD",
+    "LoadGroupE",
+    "LoadGroupF",
+    "LoadGroupG",
+    "LoadGroupH",
+    "LoadGroupI",
+    "LoadGroupJ1",
+    "LoadGroupJ2",
+    "LoadGroupJ3",
+    "LoadGroupJ4",
+    "LoadGroupK",
+    "LoadGroupL",
+    "LoadGroupM",
+    "IncorrectLoadGroupException",
+    "LoadGroupNotApplicableException",
+]
