@@ -55,9 +55,15 @@ class _LoadGroupMeta(type):
 
         return s
 
-    def validate_num_living_units(cls, num: int) -> None:
+    def is_num_living_units_applicable(cls, num: int) -> bool:
+        """
+        Check if the number of living units is applicable for this load group.
+        :param num: Number of living units.
+        :return: True if applicable, False otherwise.
+        """
         if cls._min_num_units and num < cls._min_num_units:
-            raise LoadGroupNotApplicableException(cls, num)
+            return False
+        return True
 
 
 class LoadGroup(metaclass=_LoadGroupMeta):
@@ -80,11 +86,9 @@ class LoadGroup(metaclass=_LoadGroupMeta):
     _min_num_units: int = 0
 
     def __repr__(self) -> str:
-        """String representation of the instance delegates to the class."""
         return repr(self.__class__)
 
     def __str__(self) -> str:
-        """String representation of the instance delegates to the class."""
         return str(self.__class__)
 
     def __init__(

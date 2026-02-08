@@ -89,8 +89,19 @@ with st.container(border=True):
         st.rerun()
 
 # Submit load group
+is_applicable = load_group_cls.is_num_living_units_applicable(num_living_units)
 submitted = st.button(
-    "Add load group", icon=":material/add:", type="primary", width="stretch"
+    "Add load group",
+    help=(
+        ""
+        if is_applicable
+        else f"This load group is not applicable for {num_living_units} living "
+        f"unit{'' if num_living_units==1 else 's'}."
+    ),
+    type="primary",
+    icon=":material/add:",
+    disabled=not is_applicable,
+    width="stretch",
 )
 
 if submitted:
