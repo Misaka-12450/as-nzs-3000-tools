@@ -334,7 +334,7 @@ class C1B1(C1LoadGroup):
         # 10 A for 1 to 20 points + 5 A for each additional 20 points or part thereof
         if self.num_loads <= 20:
             return 10
-        return 10 + 5 * (self.num_loads // 20)
+        return 10 + 5 * ((self.num_loads - 1) // 20)
 
     def _calculate_maximum_demand_a_2_to_5_living_units(self) -> float:
         # 10 A + 5 A per living unit
@@ -743,3 +743,4 @@ class C1M(C1LoadGroup):
 C1A1.exceptions = [C1A2, C1H]
 C1B2.exceptions = [C1C, C1D, C1E, C1F, C1G, C1L]
 C1B3.exceptions = [C1C, C1D, C1E, C1F, C1G, C1L]
+C1I.exceptions = [C1J1, C1J2, C1J3, C1J4, C1L]
