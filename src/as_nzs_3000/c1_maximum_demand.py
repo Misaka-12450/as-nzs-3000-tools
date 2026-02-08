@@ -38,6 +38,27 @@ class _C1LoadGroupMeta(type):
         ]
         return " ".join(parts)
 
+    def __str__(cls) -> str:
+        s: str = ""
+
+        if cls.exceptions:
+            s = cls._add_strings(s, "**Exceptions**")
+            for excepted_load_group in cls.exceptions:
+                s = cls._add_strings(
+                    s, f"{repr(excepted_load_group)} {excepted_load_group.description}"
+                )
+
+        if cls.notes:
+            s = cls._add_strings(s, "**Notes**")
+            for note in cls.notes:
+                s = cls._add_strings(s, str(note))
+
+        return s
+
+    def validate_num_living_units(cls, num: int) -> None:
+        if cls._min_num_units and num < cls._min_num_units:
+            raise LoadGroupNotApplicableException(cls, num)
+
 
 class C1LoadGroup(metaclass=_C1LoadGroupMeta):
     #: Load group number in list representation. E.g. ['a', 1] for load group (a) (i).
@@ -127,35 +148,6 @@ class C1LoadGroup(metaclass=_C1LoadGroupMeta):
         if s1 and s2:
             return s1 + "\n" * n + s2
         return s1 + s2
-
-    def __repr__(self) -> str:
-        if not self.load_group:
-            return self.__class__.__name__
-
-        parts = [
-            f"({'i' * part if isinstance(part, int) else str(part)})"
-            for part in self.load_group
-        ]
-        return " ".join(parts)
-
-    def __str__(self) -> str:
-        s: str = ""
-        if self.load_group_description:
-            s += self.load_group_description
-
-        if self.load_group_exception:
-            s = self._add_strings(s, "Exceptions:")
-            for exception in self.load_group_exception:
-                s = self._add_strings(
-                    s, f"{repr(exception)} {exception.load_group_description}"
-                )
-
-        if self.notes:
-            s = self._add_strings(s, "Notes:")
-            for note in self.notes:
-                s = self._add_strings(s, str(note))
-
-        return s
 
     # TODO: Add mutator to add/remove loads
 
