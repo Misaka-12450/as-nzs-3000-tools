@@ -164,6 +164,11 @@ class LoadGroup(metaclass=_LoadGroupMeta):
         """Rating per unit in watts."""
         return [r * _NOMINAL_VOLTAGE for r in self.rating_a]
 
+    @property
+    def total_rating_a(self) -> float:
+        """Total connected load in amperes."""
+        return sum(self.rating_a)
+
     @staticmethod
     def _maximum_demand_not_assessed() -> float:
         """
@@ -245,7 +250,7 @@ class LoadGroupManual(LoadGroup):
         super().__init__(rating, num_load, rating_type, num_living_units)
 
     def _calculate_maximum_demand_a(self) -> float:
-        return sum(self.rating_a)
+        return self.total_rating_a
 
 
 class LoadGroupA1(LoadGroup):
@@ -308,7 +313,7 @@ class LoadGroupA2(LoadGroup):
 
     def _calculate_maximum_demand_a_1_living_unit(self) -> float:
         # 75% connected load
-        return sum(self.rating_a) * 0.75
+        return self.total_rating_a * 0.75
 
 
 class LoadGroupB1(LoadGroup):
@@ -420,7 +425,7 @@ class LoadGroupC(LoadGroup):
 
     def _calculate_maximum_demand_a_1_living_unit(self) -> float:
         # 50% connected load
-        return sum(self.rating_a) * 0.5
+        return self.total_rating_a * 0.5
 
     def _calculate_maximum_demand_a_2_to_5_living_units(self) -> float:
         # 15 A
@@ -453,7 +458,7 @@ class LoadGroupD(LoadGroup):
 
     def _calculate_maximum_demand_a(self) -> float:
         # 75% connected load
-        return sum(self.rating_a) * 0.75
+        return self.total_rating_a * 0.75
 
 
 class LoadGroupE(LoadGroup):
@@ -468,7 +473,7 @@ class LoadGroupE(LoadGroup):
 
     def _calculate_maximum_demand_a_1_living_unit(self) -> float:
         # 33.3% connected load
-        return sum(self.rating_a) * 0.33
+        return self.total_rating_a * 0.33
 
     def _calculate_maximum_demand_a_2_to_5_living_units(self) -> float:
         # 6 A per living unit
@@ -495,7 +500,7 @@ class LoadGroupF(LoadGroup):
 
     def _calculate_maximum_demand_a_1_living_unit(self) -> float:
         # Full-load current
-        return sum(self.rating_a)
+        return self.total_rating_a
 
     def _calculate_maximum_demand_a_2_to_5_living_units(self) -> float:
         # 6 A per living unit
@@ -552,7 +557,7 @@ class LoadGroupH(LoadGroup):
 
     def _calculate_maximum_demand_a(self) -> float:
         # Full connected load
-        return sum(self.rating_a)
+        return self.total_rating_a
 
 
 class LoadGroupI(LoadGroup):
@@ -619,7 +624,7 @@ class LoadGroupJ1(LoadGroup):
 
     def _calculate_maximum_demand_a(self) -> float:
         # 50% connected load
-        return sum(self.rating_a) * 0.5
+        return self.total_rating_a * 0.5
 
 
 class LoadGroupJ2(LoadGroup):
@@ -646,7 +651,7 @@ class LoadGroupJ2(LoadGroup):
 
     def _calculate_maximum_demand_a(self) -> float:
         # 75% connected load
-        return sum(self.rating_a) * 0.75
+        return self.total_rating_a * 0.75
 
 
 class LoadGroupJ3(LoadGroup):
@@ -685,19 +690,19 @@ class LoadGroupJ4(LoadGroup):
 
     def _calculate_maximum_demand_a_1_living_unit(self):
         # Fully connected load
-        return sum(self.rating_a)
+        return self.total_rating_a
 
     def _calculate_maximum_demand_a_2_to_5_living_units(self):
         # 100% connected load
-        return sum(self.rating_a)
+        return self.total_rating_a
 
     def _calculate_maximum_demand_a_6_to_20_living_units(self):
         # 90% connected load
-        return sum(self.rating_a) * 0.9
+        return self.total_rating_a * 0.9
 
     def _calculate_maximum_demand_a_21_plus_living_units(self):
         # 75% connected load
-        return sum(self.rating_a) * 0.75
+        return self.total_rating_a * 0.75
 
 
 class LoadGroupK(LoadGroup):
