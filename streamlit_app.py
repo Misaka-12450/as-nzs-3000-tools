@@ -1,4 +1,5 @@
 import streamlit as st
+from streamlit.errors import StreamlitSecretNotFoundError
 from streamlit.navigation.page import StreamlitPage
 
 
@@ -27,7 +28,11 @@ pages = {
 
 if not st.session_state.get("site_title"):
     site_title: str
-    if site_title_prefix := st.secrets.get("site", {}).get("title"):
+    try:
+        site_title_prefix = st.secrets.get("site", {}).get("title")
+    except StreamlitSecretNotFoundError:
+        site_title_prefix = None
+    if site_title_prefix:
         site_title = f"{site_title_prefix} Tools"
     else:
         site_title = "Tools"
