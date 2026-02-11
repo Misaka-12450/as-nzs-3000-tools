@@ -23,6 +23,8 @@ class IEC60898Part1CircuitBreaker:
 
     :cvar MIN_CURVE: DataFrame containing the maximum trip curve.
     :cvar MAX_CURVE: DataFrame containing the minimum trip curve.
+    :cvar TRIP_CURRENT_INSTANT: Dictionary mapping trip curve types to their
+        instant trip current multiples.
     """
 
     MIN_CURVE: pd.DataFrame
