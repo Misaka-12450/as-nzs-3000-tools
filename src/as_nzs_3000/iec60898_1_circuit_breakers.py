@@ -135,7 +135,7 @@ class IEC60898Part1CircuitBreaker:
         return round(i_min, 2), round(i_max, 2)
 
 
-class ClipsalMax9CircuitBreaker(IEC60898Part1CircuitBreaker):
+class ClipsalMAX9RCBO(IEC60898Part1CircuitBreaker):
     MIN_CURVE = pd.read_csv(
         StringIO(
             textwrap.dedent(
