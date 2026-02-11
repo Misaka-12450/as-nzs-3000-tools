@@ -34,9 +34,9 @@ class IEC60898Part1CircuitBreaker:
         "D": (10, 20),
     }
 
-    @classmethod
+    @staticmethod
     def _interpolate_curve(
-        cls, curve: pd.DataFrame, col_x: str, col_y: str, x: float
+        curve: pd.DataFrame, col_x: str, col_y: str, x: float
     ) -> float:
         """
         Interpolate on a log-log curve. Returns NaN if x is out of range.
