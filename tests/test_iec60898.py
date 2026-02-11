@@ -126,3 +126,7 @@ def test_get_trip_current(
         assert max_current == pytest.approx(
             max_expected, abs=get_error_margin(max_expected)
         )
+
+
+def test_get_minimum_trip_current_amps():
+    assert Max9(10).get_minimum_trip_current_amps == 11.6

@@ -3,7 +3,7 @@ from __future__ import annotations
 import math
 import textwrap
 from io import StringIO
-from typing import Literal
+from typing import Literal, TypeAlias
 
 import numpy as np
 import pandas as pd
@@ -11,20 +11,21 @@ import pandas as pd
 TIME_COLUMN: str = "time"
 CURRENT_COLUMN: str = "current_multiple"
 
+TripCurveType: TypeAlias = Literal["B", "C", "D"]
+
 _1_HR: int = 3600
 TRIP_CURRENT_1_HR: tuple[float, float] = (1.13, 1.45)
-
-TripCurveType = Literal["B", "C", "D"]
 
 
 class IEC60898Part1CircuitBreaker:
     """
-    Base class for IEC 60898 circuit breakers.
+    Base class for circuit breakers.
 
     :cvar MIN_CURVE: DataFrame containing the maximum trip curve.
     :cvar MAX_CURVE: DataFrame containing the minimum trip curve.
     :cvar TRIP_CURRENT_INSTANT: Dictionary mapping trip curve types to their
         instant trip current multiples.
+    :cvar RATINGS_AVAILABLE: Tuple of available ratings for the circuit breaker.
     """
 
     MIN_CURVE: pd.DataFrame
@@ -35,6 +36,8 @@ class IEC60898Part1CircuitBreaker:
         "C": (5, 10),
         "D": (10, 20),
     }
+
+    RATINGS_AVAILABLE: tuple[int, ...] = (2, 4, 6, 10, 16, 20, 25, 32, 40, 50, 63)
 
     @staticmethod
     def _interpolate_curve(
@@ -60,6 +63,14 @@ class IEC60898Part1CircuitBreaker:
         return float(10 ** np.interp(math.log10(x), log_x, log_y))
 
     @classmethod
+    def _validate_curve(cls, curve: TripCurveType) -> None:
+        if curve not in cls.TRIP_CURRENT_INSTANT:
+            raise ValueError(
+                f"Curve '{curve}' is not available for this circuit breaker. "
+                f"Available curves: {tuple(cls.TRIP_CURRENT_INSTANT.keys())}"
+            )
+
+    @classmethod
     def get_trip_time(
         cls, current_multiple: float, curve: TripCurveType
     ) -> tuple[float, float]:
@@ -70,6 +81,7 @@ class IEC60898Part1CircuitBreaker:
         :param current_multiple: Current multiple (I/In)
         :return: Tuple of (min, max) time in seconds up to 3600s
         """
+        cls._validate_curve(curve)
 
         if current_multiple < cls.MIN_CURVE[CURRENT_COLUMN].min():
             # No trip within 1 hour
@@ -107,6 +119,7 @@ class IEC60898Part1CircuitBreaker:
         :param time: Time in seconds
         :return: Tuple of (min, max) current in amps (2 decimal places)
         """
+        cls._validate_curve(curve)
 
         if time > _1_HR:
             # No trip within 1 hour
@@ -134,8 +147,38 @@ class IEC60898Part1CircuitBreaker:
 
         return round(i_min, 2), round(i_max, 2)
 
+    def __init__(self, rating: int, curve: TripCurveType = "B"):
+        """
+        Initialise the circuit breaker with a given rating
 
-class ClipsalMAX9RCBO(IEC60898Part1CircuitBreaker):
+        :param rating: Rating of the circuit breaker in amps
+        :raises ValueError: If the rating is not in the `cls.RATINGS_AVAILABLE` tuple
+        """
+        self._validate_curve(curve)
+        if rating in self.RATINGS_AVAILABLE:
+            self.rating = rating
+        else:
+            raise ValueError(
+                f"Rating {rating}A is not available for this circuit breaker. "
+                f"Available ratings: {self.RATINGS_AVAILABLE}"
+            )
+        self.curve = curve
+
+    @property
+    def get_minimum_trip_current_amps(self) -> float:
+        """
+        Get the minimum current that will trip the circuit breaker
+
+        :return: Trip current in amps
+        """
+        return self.rating * min(self.get_trip_current(3600, self.curve))
+
+
+class IEC61009RCBO(IEC60898Part1CircuitBreaker):
+    pass
+
+
+class ClipsalMAX9RCBO(IEC61009RCBO):
     MIN_CURVE = pd.read_csv(
         StringIO(
             textwrap.dedent(
@@ -233,3 +276,15 @@ class ClipsalMAX9RCBO(IEC60898Part1CircuitBreaker):
         "C": (6.4, 9.6),
         "D": (10, 14),
     }
+
+    RATINGS_AVAILABLE = (6, 10, 16, 20, 25, 32, 40)
+
+    def __init__(self, rating: int, curve: TripCurveType = "C"):
+        """
+        Initialise the circuit breaker with a given rating
+
+        :param rating: Rating of the circuit breaker in amps
+        :param curve: Trip curve type (default "C")
+        :raises ValueError: If the rating is not in the `cls.RATINGS_AVAILABLE` tuple
+        """
+        super().__init__(rating, curve)
