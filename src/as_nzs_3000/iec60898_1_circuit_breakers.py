@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import math
 import textwrap
+from functools import lru_cache
 from io import StringIO
 from typing import Literal, TypeAlias
 
@@ -61,6 +62,48 @@ class IEC60898Part1CircuitBreaker:
         log_x = np.log10(xs[order])
         log_y = np.log10(ys[order])
         return float(10 ** np.interp(math.log10(x), log_x, log_y))
+
+    @classmethod
+    @lru_cache(maxsize=None)
+    def curve_interpolated(
+        cls, curve_type: TripCurveType | None = None
+    ) -> pd.DataFrame:
+        """
+        Get the interpolated full trip curve for the circuit breaker.
+
+        :param curve_type: Type of trip curve. Use `None` to get the full curve range.
+            # TODO: Implement filtering
+        :return: DataFrame containing the interpolated curve in the format:
+            | current_multiple | min_time | max_time |
+        """
+
+        x_min = min(
+            cls.MIN_CURVE[CURRENT_COLUMN].min(), cls.MAX_CURVE[CURRENT_COLUMN].min()
+        )
+        x_max = max(
+            cls.MIN_CURVE[CURRENT_COLUMN].max(), cls.MAX_CURVE[CURRENT_COLUMN].max()
+        )
+
+        # Sample many points on a log-spaced grid between min and max current multiples
+        x_samples = np.round(np.logspace(np.log10(x_min), np.log10(x_max), 400), 2)
+        y_samples_min = []
+        y_samples_max = []
+
+        for x in x_samples:
+            y_samples_min.append(
+                cls._interpolate_curve(cls.MIN_CURVE, CURRENT_COLUMN, TIME_COLUMN, x)
+            )
+            y_samples_max.append(
+                cls._interpolate_curve(cls.MAX_CURVE, CURRENT_COLUMN, TIME_COLUMN, x)
+            )
+
+        return pd.DataFrame(
+            {
+                CURRENT_COLUMN: x_samples,
+                "min_" + TIME_COLUMN: y_samples_min,
+                "max_" + TIME_COLUMN: y_samples_max,
+            }
+        )
 
     @classmethod
     def _validate_curve(cls, curve: TripCurveType) -> None:
@@ -288,3 +331,12 @@ class ClipsalMAX9RCBO(IEC61009RCBO):
         :raises ValueError: If the rating is not in the `cls.RATINGS_AVAILABLE` tuple
         """
         super().__init__(rating, curve)
+
+
+__all__ = [
+    "IEC60898Part1CircuitBreaker",
+    "IEC61009RCBO",
+    "ClipsalMAX9RCBO",
+    "CURRENT_COLUMN",
+    "TIME_COLUMN",
+]
