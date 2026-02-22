@@ -1,6 +1,29 @@
 import streamlit as st
 from streamlit.errors import StreamlitSecretNotFoundError
 
+
+def get_site_title() -> str:
+    """
+    Get the site title from session state or secrets, with a default fallback.
+
+    :return: The site title to be displayed in the app.
+    """
+    if not st.session_state.get("site_title"):
+        site_title: str
+        try:
+            site_title = st.secrets.get("site", {}).get("title")
+        except StreamlitSecretNotFoundError:
+            # Can be raised even with .get() if .streamlit/secrets.toml does not exist
+            site_title = "Australian Home Building Calculators"
+        st.session_state["site_title"] = site_title
+    else:
+        site_title = st.session_state["site_title"]
+    return site_title
+
+
+site_title: str = get_site_title()
+
+
 pages = {
     "": [
         st.Page("pages/home.py", title="Home", icon=":material/house:"),  # Home Page
@@ -19,23 +42,6 @@ pages = {
     ],
 }
 
-if not st.session_state.get("site_title"):
-    site_title: str
-    try:
-        site_title_prefix = st.secrets.get("site", {}).get("title")
-    except StreamlitSecretNotFoundError:
-        # Can be raised even with .get() if .streamlit/secrets.toml does not exist
-        site_title_prefix = None
-    if site_title_prefix:
-        site_title = f"{site_title_prefix} Tools"
-    else:
-        site_title = "Tools"
-    st.session_state["site_title"] = site_title
-else:
-    site_title = st.session_state["site_title"]
 
-pg = st.navigation(
-    pages,
-    # position="top",
-)
-pg.run()
+if __name__ == "__main__":
+    st.navigation(pages).run()
