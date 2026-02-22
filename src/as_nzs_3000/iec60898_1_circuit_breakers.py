@@ -158,8 +158,8 @@ class IEC60898Part1CircuitBreaker:
         """
         Calculate the trip current range for a given time.
 
-        :param curve: Type of trip curve
         :param time: Time in seconds
+        :param curve: Type of trip curve
         :return: Tuple of (min, max) current in amps (2 decimal places)
         """
         cls._validate_curve(curve)
