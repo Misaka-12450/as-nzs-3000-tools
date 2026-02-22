@@ -22,8 +22,8 @@ class IEC60898Part1CircuitBreaker:
     """
     Base class for circuit breakers.
 
-    :cvar MIN_CURVE: DataFrame containing the maximum trip curve.
-    :cvar MAX_CURVE: DataFrame containing the minimum trip curve.
+    :cvar MIN_CURVE: DataFrame containing the minimum trip curve (fastest trip).
+    :cvar MAX_CURVE: DataFrame containing the maximum trip curve (slowest trip).
     :cvar TRIP_CURRENT_INSTANT: Dictionary mapping trip curve types to their
         instant trip current multiples.
     :cvar RATINGS_AVAILABLE: Tuple of available ratings for the circuit breaker.
