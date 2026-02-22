@@ -129,4 +129,4 @@ def test_get_trip_current(
 
 
 def test_get_minimum_trip_current_amps():
-    assert Max9(10).get_minimum_trip_current_amps == 11.6
+    assert Max9(10).minimum_trip_current_amps == 11.6
