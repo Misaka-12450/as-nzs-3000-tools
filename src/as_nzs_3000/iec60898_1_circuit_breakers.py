@@ -160,7 +160,8 @@ class IEC60898Part1CircuitBreaker:
 
         :param time: Time in seconds
         :param curve: Type of trip curve
-        :return: Tuple of (min, max) current in amps (2 decimal places)
+        :return: Tuple of (min, max) current multiples (I/In), 2 decimal places.
+            Multiply by the circuit breaker rated current to obtain amperes.
         """
         cls._validate_curve(curve)
 
