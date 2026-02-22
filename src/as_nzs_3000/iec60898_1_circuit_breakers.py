@@ -339,4 +339,5 @@ __all__ = [
     "ClipsalMAX9RCBO",
     "CURRENT_COLUMN",
     "TIME_COLUMN",
+    "TripCurveType",
 ]
