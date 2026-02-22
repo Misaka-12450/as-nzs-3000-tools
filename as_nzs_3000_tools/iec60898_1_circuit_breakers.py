@@ -13,6 +13,7 @@ TIME_COLUMN: str = "time"
 CURRENT_COLUMN: str = "current_multiple"
 
 TripCurveType: TypeAlias = Literal["B", "C", "D"]
+MinMaxType: TypeAlias = Literal["MIN", "MAX", "BOTH"]
 
 _1_HR: int = 3600
 TRIP_CURRENT_1_HR: tuple[float, float] = (1.13, 1.45)
@@ -125,7 +126,10 @@ class IEC60898Part1CircuitBreaker:
 
     @classmethod
     def get_trip_time(
-        cls, current_multiple: float, curve: TripCurveType
+        cls,
+        current_multiple: float,
+        curve: TripCurveType | None = None,
+        min_max: MinMaxType = "BOTH",
     ) -> tuple[float, float]:
         """
         Calculate the trip time range for a given current multiple.
