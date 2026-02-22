@@ -31,6 +31,7 @@ if not st.session_state.get("site_title"):
     try:
         site_title_prefix = st.secrets.get("site", {}).get("title")
     except StreamlitSecretNotFoundError:
+        # Can be raised even with .get() if .streamlit/secrets.toml does not exist
         site_title_prefix = None
     if site_title_prefix:
         site_title = f"{site_title_prefix} Tools"
