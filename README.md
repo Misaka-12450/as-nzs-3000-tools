@@ -25,7 +25,7 @@ A set of tools for calculations relating to AS/NZS 3000 (Wiring Rules), AS/NZS 3
 
 ### 1. Docker
 
-Docker images will be provided when this project is more substantial
+Docker images will be provided when this project has more entries
 
 ### 2. Python virtual environment
 
