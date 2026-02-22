@@ -2,7 +2,7 @@
 
 A set of tools for calculations relating to AS/NZS 3000 (Wiring Rules), AS/NZS 3008 (Selection of Cables), related IEC rules, etc.
 
-## Implemented
+## Roadmap
 
 ### Standards
 
