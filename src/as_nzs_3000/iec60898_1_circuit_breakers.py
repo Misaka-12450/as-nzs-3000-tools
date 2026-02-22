@@ -91,10 +91,20 @@ class IEC60898Part1CircuitBreaker:
 
         for x in x_samples:
             y_samples_min.append(
-                cls._interpolate_curve(cls.MIN_CURVE, CURRENT_COLUMN, TIME_COLUMN, x)
+                round(
+                    cls._interpolate_curve(
+                        cls.MIN_CURVE, CURRENT_COLUMN, TIME_COLUMN, x
+                    ),
+                    2,
+                )
             )
             y_samples_max.append(
-                cls._interpolate_curve(cls.MAX_CURVE, CURRENT_COLUMN, TIME_COLUMN, x)
+                round(
+                    cls._interpolate_curve(
+                        cls.MAX_CURVE, CURRENT_COLUMN, TIME_COLUMN, x
+                    ),
+                    2,
+                )
             )
 
         return pd.DataFrame(
