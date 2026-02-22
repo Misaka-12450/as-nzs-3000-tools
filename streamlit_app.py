@@ -1,30 +1,23 @@
 import streamlit as st
 from streamlit.errors import StreamlitSecretNotFoundError
-from streamlit.navigation.page import StreamlitPage
-
-
-HOME_PAGE: StreamlitPage = st.Page(
-    "pages/home.py", title="Home", icon=":material/house:"
-)
-# IEC60898: StreamlitPage = st.Page(
-#     "pages/iec60898_1_circuit_breakers.py",
-#     title="IEC 60898 Circuit Breaker Calculator",
-#     icon=":material/switch:",
-# )
-MAXIMUM_DEMAND: StreamlitPage = st.Page(
-    "pages/maximum_demand.py",
-    title="AS/NZS 3000 Maximum Demand",
-    icon=":material/bolt:",
-)
 
 pages = {
-    "": [HOME_PAGE],
+    "": [
+        st.Page("pages/home.py", title="Home", icon=":material/house:"),  # Home Page
+    ],
     "Electrical": [
-        # IEC60898,
-        MAXIMUM_DEMAND,
+        # st.Page(
+        #     "pages/iec60898.py",
+        #     title="IEC 60898 Circuit Breaker",
+        #     icon=":material/switch:",
+        # ), # IEC 60898
+        st.Page(
+            "pages/maximum_demand.py",
+            title="AS/NZS 3000 Maximum Demand",
+            icon=":material/bolt:",
+        ),  # C1 Maximum Demand
     ],
 }
-# pages = [HOME_PAGE, IEC60898]
 
 if not st.session_state.get("site_title"):
     site_title: str
@@ -41,5 +34,8 @@ if not st.session_state.get("site_title"):
 else:
     site_title = st.session_state["site_title"]
 
-pg = st.navigation(pages, position="top")
+pg = st.navigation(
+    pages,
+    # position="top",
+)
 pg.run()
