@@ -314,7 +314,7 @@ class ClipsalMAX9RCBO(IEC61009RCBO):
         names=[CURRENT_COLUMN, TIME_COLUMN],
     )
 
-    TRIP_CURRENT_INSTANT: dict[str, float] = {
+    TRIP_CURRENT_INSTANT: dict[str, tuple[float,float]] = {
         "B": (3.2, 4.8),
         "C": (6.4, 9.6),
         "D": (10, 14),
