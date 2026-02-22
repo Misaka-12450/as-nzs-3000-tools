@@ -45,7 +45,7 @@ Docker images will be provided when this project is more substantial
 3. Run the virtual environment depending on your platform:
    1. Windows
 
-   ```powershell
+   ```pwsh
    .venv\scripts\activate
    ```
 
