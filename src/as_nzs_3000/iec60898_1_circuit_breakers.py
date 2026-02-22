@@ -22,8 +22,8 @@ class IEC60898Part1CircuitBreaker:
     """
     Base class for circuit breakers.
 
-    :cvar MIN_CURVE: DataFrame containing the maximum trip curve.
-    :cvar MAX_CURVE: DataFrame containing the minimum trip curve.
+    :cvar MIN_CURVE: DataFrame containing the minimum trip curve (fastest trip).
+    :cvar MAX_CURVE: DataFrame containing the maximum trip curve (slowest trip).
     :cvar TRIP_CURRENT_INSTANT: Dictionary mapping trip curve types to their
         instant trip current multiples.
     :cvar RATINGS_AVAILABLE: Tuple of available ratings for the circuit breaker.
@@ -67,7 +67,7 @@ class IEC60898Part1CircuitBreaker:
     @lru_cache(maxsize=None)
     def curve_interpolated(
         cls, curve_type: TripCurveType | None = None
-    ) -> pd.DataFrame: # TODO: Add tests
+    ) -> pd.DataFrame:
         """
         Get the interpolated full trip curve for the circuit breaker.
 
@@ -120,8 +120,8 @@ class IEC60898Part1CircuitBreaker:
         """
         Calculate the trip time range for a given current multiple.
 
-        :param curve: Type of trip curve
         :param current_multiple: Current multiple (I/In)
+        :param curve: Type of trip curve
         :return: Tuple of (min, max) time in seconds up to 3600s
         """
         cls._validate_curve(curve)
@@ -158,9 +158,10 @@ class IEC60898Part1CircuitBreaker:
         """
         Calculate the trip current range for a given time.
 
-        :param curve: Type of trip curve
         :param time: Time in seconds
-        :return: Tuple of (min, max) current multiples (I/In) in 2 decimal places.
+        :param curve: Type of trip curve
+        :return: Tuple of (min, max) current multiples (I/In), 2 decimal places.
+            Multiply by the circuit breaker rated current to obtain amperes.
         """
         cls._validate_curve(curve)
 
@@ -208,9 +209,9 @@ class IEC60898Part1CircuitBreaker:
         self.curve = curve
 
     @property
-    def minimum_trip_current_amps(self) -> float:
+    def get_minimum_trip_current_amps(self) -> float:
         """
-        Get the minimum current that will trip the circuit breaker in 1 hour
+        Get the minimum current that will trip the circuit breaker
 
         :return: Trip current in amps
         """
@@ -314,7 +315,7 @@ class ClipsalMAX9RCBO(IEC61009RCBO):
         names=[CURRENT_COLUMN, TIME_COLUMN],
     )
 
-    TRIP_CURRENT_INSTANT: dict[str, tuple[float,float]] = {
+    TRIP_CURRENT_INSTANT: dict[str, float] = {
         "B": (3.2, 4.8),
         "C": (6.4, 9.6),
         "D": (10, 14),
@@ -339,5 +340,4 @@ __all__ = [
     "ClipsalMAX9RCBO",
     "CURRENT_COLUMN",
     "TIME_COLUMN",
-    "TripCurveType",
 ]
