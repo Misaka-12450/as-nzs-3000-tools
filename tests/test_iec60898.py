@@ -3,8 +3,8 @@ from typing import Sequence
 
 import pytest
 
-from as_nzs_3000.iec60898_1_circuit_breakers import ClipsalMAX9RCBO as Max9
-from as_nzs_3000.iec60898_1_circuit_breakers import TripCurveType
+from as_nzs_3000_tools.iec60898_1_circuit_breakers import ClipsalMAX9RCBO as Max9
+from as_nzs_3000_tools.iec60898_1_circuit_breakers import TripCurveType
 
 _TEST_CIRCUIT_BREAKERS = [Max9]  # TODO: Map breakers to test data when more are added
 

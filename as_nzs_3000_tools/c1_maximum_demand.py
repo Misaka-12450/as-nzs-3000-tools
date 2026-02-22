@@ -4,7 +4,7 @@ from typing import Literal
 
 import roman
 
-from as_nzs_3000 import c1_notes
+from as_nzs_3000_tools import c1_notes
 
 _NOMINAL_VOLTAGE = 230
 
