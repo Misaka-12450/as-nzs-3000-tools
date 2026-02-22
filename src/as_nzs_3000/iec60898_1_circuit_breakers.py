@@ -120,8 +120,8 @@ class IEC60898Part1CircuitBreaker:
         """
         Calculate the trip time range for a given current multiple.
 
-        :param curve: Type of trip curve
         :param current_multiple: Current multiple (I/In)
+        :param curve: Type of trip curve
         :return: Tuple of (min, max) time in seconds up to 3600s
         """
         cls._validate_curve(curve)
