@@ -208,9 +208,9 @@ class IEC60898Part1CircuitBreaker:
         self.curve = curve
 
     @property
-    def get_minimum_trip_current_amps(self) -> float:
+    def minimum_trip_current_amps(self) -> float:
         """
-        Get the minimum current that will trip the circuit breaker
+        Get the minimum current that will trip the circuit breaker in 1 hour
 
         :return: Trip current in amps
         """
