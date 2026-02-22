@@ -67,7 +67,7 @@ class IEC60898Part1CircuitBreaker:
     @lru_cache(maxsize=None)
     def curve_interpolated(
         cls, curve_type: TripCurveType | None = None
-    ) -> pd.DataFrame:
+    ) -> pd.DataFrame: # TODO: Add tests
         """
         Get the interpolated full trip curve for the circuit breaker.
 
@@ -160,7 +160,7 @@ class IEC60898Part1CircuitBreaker:
 
         :param curve: Type of trip curve
         :param time: Time in seconds
-        :return: Tuple of (min, max) current in amps (2 decimal places)
+        :return: Tuple of (min, max) current multiples (I/In) in 2 decimal places.
         """
         cls._validate_curve(curve)
 
