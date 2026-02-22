@@ -114,13 +114,13 @@ def test_get_trip_current(
     :return:
     """
     min_current, max_current = cb.get_trip_current(time_s, curve)
-    if isinstance(min_expected, Sequence) and not isinstance(max_expected, str):
+    if isinstance(min_expected, Sequence):
         assert min_expected[0] <= min_current <= min_expected[1]
     else:
         assert min_current == pytest.approx(
             min_expected, abs=get_error_margin(min_expected)
         )
-    if isinstance(max_expected, Sequence) and not isinstance(max_expected, str):
+    if isinstance(max_expected, Sequence):
         assert max_expected[0] <= max_current <= max_expected[1]
     else:
         assert max_current == pytest.approx(
