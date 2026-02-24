@@ -2,6 +2,9 @@ import streamlit as st
 import inspect
 import as_nzs_3000_tools.as_nzs_3000_c_load_groups as c1
 
+st.header("Domestic Maximum Demand")
+st.caption("AS/NZS 3000 Table C1")
+
 # Dynamically get all C1LoadGroup subclasses
 _LOAD_GROUPS: list[type[c1.LoadGroup]] = [
     getattr(c1, name)
@@ -71,14 +74,17 @@ with st.container(border=True):
     # TODO: Add loads of different rating in one load group
     for i in range(num_loads):
         col1, col2, col3, col4 = st.columns([3, 3, 3, 1], vertical_alignment="bottom")
+
+        # Number of loads
         with col1:
             num_load = st.number_input(
                 "Number of loads", min_value=1, value=1, step=1, key=f"num_load_{i}"
             )
+
+        # Rating per load
         with col2:
-            rating = st.number_input(
-                "Rating per load", min_value=1, value=10, step=1, key=f"rating_{i}"
-            )
+
+        # Unit
         with col3:
             rating_type = st.selectbox(
                 "Unit",
@@ -87,6 +93,8 @@ with st.container(border=True):
                 key=f"load_row_{i}",
                 label_visibility="collapsed",
             )
+
+        # Delete
         with col4:
             st.button(
                 "",
@@ -101,7 +109,7 @@ with st.container(border=True):
         st.session_state["num_loads"] += 1
         st.rerun()
 
-# Submit load group
+# Submit button
 is_applicable = load_group_cls.is_num_living_units_applicable(num_living_units)
 submitted = st.button(
     "Add load group",
@@ -170,7 +178,7 @@ if st.session_state.load_entries:
                 st.session_state.load_entries.pop(i)
                 st.rerun()
 
-    # Display total maximum demand
+    # Totals
     st.divider()
     total_a = sum(e["max_demand_a"] for e in st.session_state.load_entries)
     total_w = sum(e["max_demand_w"] for e in st.session_state.load_entries)
