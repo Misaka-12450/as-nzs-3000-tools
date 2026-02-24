@@ -2,26 +2,20 @@ import streamlit as st
 from streamlit.errors import StreamlitSecretNotFoundError
 
 
-def get_site_title() -> str:
+def load_site_title() -> None:
     """
-    Get the site title from session state or secrets, with a default fallback.
-
-    :return: The site title to be displayed in the app.
+    Load the site title from session state or secrets, with a default fallback.
     """
     if not st.session_state.get("site_title"):
-        site_title: str
+        title: str
         try:
-            site_title = st.secrets.get("site", {}).get("title")
+            st.session_state["site_title"] = st.secrets.get("site", {}).get("title")
         except StreamlitSecretNotFoundError:
             # Can be raised even with .get() if .streamlit/secrets.toml does not exist
-            site_title = "Australian Home Building Calculators"
-        st.session_state["site_title"] = site_title
-    else:
-        site_title = st.session_state["site_title"]
-    return site_title
+            st.session_state["site_title"] = "Australian Home Building Calculators"
 
 
-site_title: str = get_site_title()
+load_site_title()
 
 
 pages = {
