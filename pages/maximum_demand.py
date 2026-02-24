@@ -16,19 +16,32 @@ for lg in _LOAD_GROUPS:
     # TODO: Hide load groups that are not applicable
     _LOAD_GROUPS_DICT[f"{repr(lg)} {lg.title}"] = lg
 
-st.header("AS/NZS 3000 Maximum Demand")
-st.caption("Table C1 — Domestic maximum demand calculation")
 
-num_living_units = st.number_input(
+# Input fields
+
+
+# Number of living units
+
+single_living_unit = st.segmented_control(
     "Number of living units per phase",
-    min_value=1,
-    value=1,
-    help="Use 1 for a single domestic installation.",
+    options=[":material/house: 1", ":material/apartment: 2 or more"],
+    default=":material/house: 1",
+    width="stretch",
 )
+if single_living_unit == ":material/house: 1":
+    num_living_units = 1
+    st.session_state["as_nzs_3000_c1_num_living_units"] = 1
+else:
+    num_living_units = st.number_input(
+        "Number of living units per phase",
+        min_value=2,
+        value=2,
+        key="as_nzs_3000_c1_num_living_units",
+        label_visibility="collapsed",
+    )
 
-if "load_entries" not in st.session_state:
-    st.session_state.load_entries = []
 
+# Load group selection and input
 st.subheader("Add Load Group")
 
 # Load group selection and input
