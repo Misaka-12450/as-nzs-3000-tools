@@ -1,6 +1,6 @@
 import streamlit as st
 import inspect
-import as_nzs_3000_tools.c1_maximum_demand as c1
+import as_nzs_3000_tools.as_nzs_3000_c_load_groups as c1
 
 # Dynamically get all C1LoadGroup subclasses
 _LOAD_GROUPS: list[type[c1.LoadGroup]] = [

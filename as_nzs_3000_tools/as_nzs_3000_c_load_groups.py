@@ -1,5 +1,3 @@
-# TODO: Rename to as_nzs_3000_c_load_groups.py
-
 from __future__ import annotations
 
 from typing import Iterable, Literal
