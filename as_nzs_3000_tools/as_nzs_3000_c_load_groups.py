@@ -350,6 +350,7 @@ class LoadGroupA1(LoadGroupPointBased):
     title = "Lighting"
     description = "Lighting except (ii) and load group (h) below"
     notes = [c1_notes.C1Note4, c1_notes.C1Note6]
+    max_rating = 10
 
     def _calculate_maximum_demand_a_1_living_unit(self) -> float:
         # 3 A for 1 to 20 points + 2 A for each additional 20 points or part thereof
@@ -375,6 +376,7 @@ class LoadGroupA2(LoadGroupPointBased):
     title = "Outdoor lighting"
     description = "Outdoor lighting exceeding a total of 1000 W"
     notes = [c1_notes.C1Note6, c1_notes.C1Note7]
+    max_rating = 10
 
     def _calculate_maximum_demand_a(self) -> float:
         # No assessment for the purpose of maximum demand
@@ -394,6 +396,7 @@ class LoadGroupB1(LoadGroupPointBased):
         "and not included in other load groups"
     )
     notes = [c1_notes.C1Note5, c1_notes.C1Note8, c1_notes.C1Note9]
+    max_rating = 10
 
     def _calculate_maximum_demand_a_1_living_unit(self) -> float:
         # 10 A for 1 to 20 points + 5 A for each additional 20 points or part thereof
@@ -424,6 +427,7 @@ class LoadGroupB2(LoadGroupPointBased):
         "load groups (c), (d), (e), (f), (g) and (l)"
     )
     notes = [c1_notes.C1Note8, c1_notes.C1Note10]
+    max_rating = 15
 
     def __init__(
         self,
@@ -449,6 +453,7 @@ class LoadGroupB3(LoadGroupPointBased):
         "load groups (c), (d), (e), (f), (g) and (l)"
     )
     notes = [c1_notes.C1Note8, c1_notes.C1Note10]
+    max_rating = 20
 
     def _calculate_maximum_demand_a(self) -> float:
         # 15 A
@@ -610,6 +615,7 @@ class LoadGroupI(LoadGroupPointBased):
         "exceeding 10 A"
     )
     notes = [c1_notes.C1Note8, c1_notes.C1Note10, c1_notes.C1Note14]
+    max_rating = 10
     _min_num_units = 2
 
     def _calculate_maximum_demand_a(self) -> float:
