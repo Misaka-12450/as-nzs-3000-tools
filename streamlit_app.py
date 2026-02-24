@@ -22,17 +22,19 @@ pages = {
     "": [
         st.Page("pages/home.py", title="Home", icon=":material/house:"),  # Home Page
     ],
-    "Electrical": [
-        # st.Page(
-        #     "pages/iec60898.py",
-        #     title="IEC 60898 Circuit Breaker",
-        #     icon=":material/switch:",
-        # ), # IEC 60898
+    # "IEC60898-1 Circuit-breakers": [
+    #     st.Page(
+    #         "pages/iec60898.py",
+    #         title="IEC 60898 Circuit Breaker",
+    #         icon=":material/switch:",
+    #     ),
+    # ],
+    "AS/NZS 3000 Wiring Rules": [
         st.Page(
             "pages/maximum_demand.py",
-            title="AS/NZS 3000 Maximum Demand",
+            title="C1 Domestic Maximum Demand",
             icon=":material/bolt:",
-        ),  # C1 Maximum Demand
+        ),
     ],
 }
 
