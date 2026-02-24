@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from typing import Literal
+from typing import Iterable, Literal
 
 import roman
 
@@ -275,16 +275,42 @@ class LoadGroupRatingBased(LoadGroup):
         self.rating = rating
 
     def add(self, rating: float) -> None:
-        # TODO: #5
-        pass
+        """
+        Adds a load to the load group.
 
-    def change(self, rating: float) -> None:
-        # TODO: #5
-        pass
+        :param rating: The rating of the load to be added.
+        """
 
-    def remove(self, rating: float) -> None:
-        # TODO: #5
-        pass
+        self.ratings.append(rating)
+
+    def change(self, old_rating: float, new_rating: float) -> None:
+        """
+        Change the rating of a load in the load group. The old rating value is replaced with the new one.
+
+        :param old_rating: The old rating value to be replaced.
+        :param new_rating: The new rating value to replace the old one.
+        """
+        if not old_rating in self.ratings:
+            raise ValueError("Old rating not found.")
+
+        self.ratings[self.ratings.index(old_rating)] = new_rating
+
+    def remove(self, rating: float, num: int = 1) -> None:
+        """
+        Remove a load from the load group.
+
+        :param rating: The rating of the load to be removed.
+        :param num: The number of loads with the specified rating to be removed. Default is 1.
+        """
+        if not self.ratings.count(rating) >= num:
+            raise ValueError("Not enough ratings found.")
+
+        for i in range(self.num_loads - 1, -1, -1):
+            if self.ratings[i] == rating:
+                del self.ratings[i]
+                num -= 1
+                if num == 0:
+                    break
 
 
 class LoadGroupPointBased(LoadGroup):
