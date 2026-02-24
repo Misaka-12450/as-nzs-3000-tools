@@ -5,8 +5,7 @@ from typing import Iterable, Literal
 import roman
 
 from as_nzs_3000_tools import as_nzs_3000_c1_notes as c1_notes
-
-_NOMINAL_VOLTAGE = 230
+from as_nzs_3000_tools.common import NOMINAL_VOLTAGE
 
 
 class IncorrectLoadGroupException(Exception):
@@ -188,7 +187,7 @@ class LoadGroup(metaclass=_LoadGroupMeta):
         Calculates maximum demand of the load group in watts.
         :return: Maximum demand in watts.
         """
-        return self.maximum_demand_a * _NOMINAL_VOLTAGE
+        return self.maximum_demand_a * NOMINAL_VOLTAGE
 
     @classmethod
     def get_exceptions(cls) -> str:
@@ -254,7 +253,7 @@ class LoadGroupRatingBased(LoadGroup):
         if isinstance(rating_w, Iterable) and not isinstance(rating_w, str):
             ratings_w = list(rating_w)
         else:
-            return rating_w / _NOMINAL_VOLTAGE
+            return rating_w / NOMINAL_VOLTAGE
 
         ratings_a = []
         for r in ratings_w:
@@ -262,7 +261,7 @@ class LoadGroupRatingBased(LoadGroup):
                 raise ValueError(
                     "All rating values must be a number no less than zero."
                 )
-            ratings_a.append(r / _NOMINAL_VOLTAGE)
+            ratings_a.append(r / NOMINAL_VOLTAGE)
 
         return ratings_a
 
