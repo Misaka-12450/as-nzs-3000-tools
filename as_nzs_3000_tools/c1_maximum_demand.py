@@ -183,13 +183,7 @@ class LoadGroup(metaclass=_LoadGroupMeta):
         """Total connected load in amperes."""
         return sum(self.rating_a)
 
-    @staticmethod
-    def _maximum_demand_not_assessed() -> float:
-        """
-        Load groups where maximum demand is not assessed.
-        :return: Always returns 0.0 A.
-        """
-        return 0.0
+    
 
     def _calculate_maximum_demand_a(self) -> float:
         """
@@ -339,7 +333,7 @@ class LoadGroupA2(LoadGroup):
 
     def _calculate_maximum_demand_a(self) -> float:
         # No assessment for the purpose of maximum demand
-        return self._maximum_demand_not_assessed()
+        return 0.0
 
     def _calculate_maximum_demand_a_1_living_unit(self) -> float:
         # 75% connected load
