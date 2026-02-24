@@ -86,7 +86,10 @@ class LoadGroup(metaclass=_LoadGroupMeta):
     notes: list[type[c1_notes.C1Note]] = []
 
     #: Minimum number of living units required for this load group.
-    _min_num_units: int = 0
+    _min_num_units: int = 1
+
+    #: Number of loads in this load group.
+    num_loads: int
 
     def __repr__(self) -> str:
         return repr(self.__class__)
@@ -94,27 +97,11 @@ class LoadGroup(metaclass=_LoadGroupMeta):
     def __str__(self) -> str:
         return str(self.__class__)
 
-    def __init__(
-        self,
-        rating: (
-            float | list[float] | None
-        ) = None,  # TODO: #2 Move to LoadGroupRatingBased
-        num_load: int = 1,  # TODO: #2 Move to LoadGroupPointBased
-        rating_type: Literal["A", "W"] = "A",  # TODO: # 3 Deprecate
-        num_living_units: int = 1,
-    ):
+    def __init__(self, num_living_units: int = 1):
         """
         Class for calculating maximum demand for various load types.
         Based on AS/NZS 3000 Table C1.
 
-        :param float | list[float] rating: Rating per unit.
-            Can be a list for different ratings.
-        :param int num_load: Number of loads in this load group.
-            If `rating` is a list, this is the number of loads per rating.
-            E.g. `rating=[10, 20]` and `num_load=2` means 2 loads of 10 and 2 loads of
-            20.
-        :param Literal["A", "W"] rating_type:
-            Type of rating, either "A" for amperes or "W" for watts.
         :param int num_living_units: Number of living units per phase.
             Use 1 for single domestic installations.
 
@@ -124,36 +111,10 @@ class LoadGroup(metaclass=_LoadGroupMeta):
         :raises LoadGroupNotApplicableException: If the load group is not applicable.
         """
 
-        # Validate ratings
-        if rating is None:
-            raise ValueError("rating must be provided.")
-        ratings = rating if isinstance(rating, list) else [rating]
-        for r in ratings:
-            if r <= 0:
-                raise ValueError("All rating values must be greater than zero.")
-
-        # Convert ratings to amperes if necessary
-        if rating_type == "A":
-            self.rating_a = ratings
-        elif rating_type == "W":
-            self.rating_a = [r / _NOMINAL_VOLTAGE for r in ratings]
-        else:
-            raise ValueError("rating_type must be either 'A' or 'W'.")
-
-        # Validate number of units
-        if num_load <= 0:
-            raise ValueError("num_load must be greater than zero.")
-        if num_load > 1:
-            self.rating_a = self.rating_a * num_load
-
-        if self._min_num_units and num_living_units < self._min_num_units:
+        if num_living_units < self._min_num_units:
             raise LoadGroupNotApplicableException(self.__class__, num_living_units)
 
-        # Validate number of living units
-        if num_living_units > 0:
-            self.num_living_units = num_living_units
-        else:
-            raise ValueError("num_living_units must be greater than zero.")
+        self.num_living_units = num_living_units
 
     @staticmethod
     def _add_strings(s1: str, s2: str, n: int = 2) -> str:
@@ -167,27 +128,10 @@ class LoadGroup(metaclass=_LoadGroupMeta):
             return s1 + "\n" * n + s2
         return s1 + s2
 
-    # TODO: Add mutator to add/remove loads
-
-    @property
-    def num_loads(self) -> int:
-        """
-        Get the number of loads in this load group.
-        :return: The number of loads.
-        """
-        return len(self.rating_a)
-
-    @property
-    def rating_w(self) -> list[float]:
-        """Rating per unit in watts."""
-        return [r * _NOMINAL_VOLTAGE for r in self.rating_a]
-
     @property
     def total_rating_a(self) -> float:
-        """Total connected load in amperes."""
-        return sum(self.rating_a)
-
-    
+        """Total load in amperes."""
+        raise NotImplementedError
 
     def _calculate_maximum_demand_a(self) -> float:
         """
@@ -195,7 +139,7 @@ class LoadGroup(metaclass=_LoadGroupMeta):
         Subclasses with one formula for all tiers override this method.
         :return: Maximum demand in amperes.
         """
-        raise NotImplementedError("This method should be implemented in subclasses.")
+        raise NotImplementedError
 
     def _calculate_maximum_demand_a_1_living_unit(self) -> float:
         """
@@ -267,12 +211,72 @@ class LoadGroup(metaclass=_LoadGroupMeta):
 
 class LoadGroupRatingBased(LoadGroup):
     def __init__(
-        self, rating: float | list[float] | None = None, num_living_units: int = 1
+        self,
+        rating: float | Iterable[float],
+        rating_unit: Literal["A", "W"] = "A",
+        num_living_units: int = 1,
     ):
+        """
+        Load group whose maximum demand is calculated based on the rating of the loads.
+
+        :param rating: Rating of the load. Can be a single value or an iterable
+            (e.g. list) of values.
+        :param rating_unit: Unit of the rating, either "A" for amperes or "W" for watts.
+        :param num_living_units: Number of living units.
+        :raises ValueError: If the rating is not valid.
+        """
         super().__init__(num_living_units=num_living_units)
-        if rating <= 0:
-            raise ValueError("rating must be greater than zero.")
-        self.rating = rating
+
+        if isinstance(rating, Iterable) and not isinstance(rating, str):
+            ratings = list(rating)
+        else:
+            ratings = [rating]
+
+        for r in ratings:
+            if not isinstance(r, (int, float)) or r < 0:
+                raise ValueError(
+                    "All rating values must be a number no less than zero."
+                )
+
+        if rating_unit != "A" and rating_unit != "W":
+            raise ValueError("rating_unit must be either 'A' or 'W'.")
+
+        if rating_unit == "W":
+            ratings = self.watts_to_amperes(ratings)
+
+        self.ratings = ratings
+
+    @staticmethod
+    def watts_to_amperes(rating_w: float | Iterable[float]) -> float | list[float]:
+        """
+        Convert rating in watts to amperes.
+        :param rating_w: Rating in watts. Can be a single value or an iterable (e.g. list) of values.
+        :return: Ratings in amperes.
+        """
+        if isinstance(rating_w, Iterable) and not isinstance(rating_w, str):
+            ratings_w = list(rating_w)
+        else:
+            return rating_w / _NOMINAL_VOLTAGE
+
+        ratings_a = []
+        for r in ratings_w:
+            if not isinstance(r, (int, float)) or r < 0:
+                raise ValueError(
+                    "All rating values must be a number no less than zero."
+                )
+            ratings_a.append(r / _NOMINAL_VOLTAGE)
+
+        return ratings_a
+
+    @property
+    def num_loads(self) -> int:
+        """Number of loads."""
+        return len(self.ratings)
+
+    @property
+    def total_rating_a(self) -> float:
+        """Total load in amperes."""
+        return sum(self.ratings)
 
     def add(self, rating: float) -> None:
         """
@@ -316,43 +320,39 @@ class LoadGroupRatingBased(LoadGroup):
 class LoadGroupPointBased(LoadGroup):
     max_rating: float
 
-    def __init__(self, num_load: int = 1, num_living_units: int = 1):
-        super().__init__(num_living_units=num_living_units)
-        if num_load <= 0:
+    def __init__(self, num_loads: int = 1, num_living_units: int = 1):
+        """
+        Load group whose maximum demand is calculated based on the number of loads (points).
+
+        :param num_loads: Number of loads (points).
+        :param num_living_units: Number of living units.
+        :raises ValueError: If num_loads is not greater than zero.
+        """
+
+        if num_loads < 1:
             raise ValueError("num_load must be greater than zero.")
-        self.num_load = num_load
+
+        super().__init__(num_living_units)
+        self.num_loads = num_loads
+
+    @property
+    def total_rating_a(self) -> float:
+        """Total load in amperes."""
+        return self.num_loads * self.max_rating
 
 
-class LoadGroupManual(LoadGroup):
+class LoadGroupManual(LoadGroupRatingBased):
     title = "Manually assessed maximum demand"
-
-    def __init__(
-        self,
-        rating: float | list[float] | None = None,
-        num_load: int = 1,
-        rating_type: Literal["A", "W"] = "A",
-        num_living_units: int = 1,
-    ):
-        super().__init__(rating, num_load, rating_type, num_living_units)
 
     def _calculate_maximum_demand_a(self) -> float:
         return self.total_rating_a
 
 
-class LoadGroupA1(LoadGroup):
+class LoadGroupA1(LoadGroupPointBased):
     code = ["a", 1]
     title = "Lighting"
     description = "Lighting except (ii) and load group (h) below"
     notes = [c1_notes.C1Note4, c1_notes.C1Note6]
-
-    def __init__(
-        self,
-        rating: float | list[float] | None = None,
-        num_load: int = 1,
-        rating_type: Literal["A", "W"] = "A",
-        num_living_units: int = 1,
-    ):
-        super().__init__(rating, num_load, rating_type, num_living_units)
 
     def _calculate_maximum_demand_a_1_living_unit(self) -> float:
         # 3 A for 1 to 20 points + 2 A for each additional 20 points or part thereof
@@ -373,25 +373,11 @@ class LoadGroupA1(LoadGroup):
         return 0.5 * self.num_living_units
 
 
-class LoadGroupA2(LoadGroup):
+class LoadGroupA2(LoadGroupPointBased):
     code = ["a", 2]
     title = "Outdoor lighting"
     description = "Outdoor lighting exceeding a total of 1000 W"
     notes = [c1_notes.C1Note6, c1_notes.C1Note7]
-
-    def __init__(
-        self,
-        rating: float | list[float] | None = None,
-        num_load: int = 1,
-        rating_type: Literal["A", "W"] = "A",
-        num_living_units: int = 1,
-    ):
-        super().__init__(rating, num_load, rating_type, num_living_units)
-        if (sum_rating_w := sum(self.rating_w)) < 1000:
-            raise IncorrectLoadGroupException(
-                LoadGroupA1,
-                (f"Total wattage ({sum_rating_w} W) does not exceed" " 1000 W."),
-            )
 
     def _calculate_maximum_demand_a(self) -> float:
         # No assessment for the purpose of maximum demand
@@ -402,7 +388,7 @@ class LoadGroupA2(LoadGroup):
         return self.total_rating_a * 0.75
 
 
-class LoadGroupB1(LoadGroup):
+class LoadGroupB1(LoadGroupPointBased):
     code = ["b", 1]
     title = "Socket-outlets <= 10 A"
     description = (
@@ -411,15 +397,6 @@ class LoadGroupB1(LoadGroup):
         "and not included in other load groups"
     )
     notes = [c1_notes.C1Note5, c1_notes.C1Note8, c1_notes.C1Note9]
-
-    def __init__(
-        self,
-        rating: float | list[float] | None = None,
-        num_load: int = 1,
-        rating_type: Literal["A", "W"] = "A",
-        num_living_units: int = 1,
-    ):
-        super().__init__(rating, num_load, rating_type, num_living_units)
 
     def _calculate_maximum_demand_a_1_living_unit(self) -> float:
         # 10 A for 1 to 20 points + 5 A for each additional 20 points or part thereof
@@ -440,7 +417,7 @@ class LoadGroupB1(LoadGroup):
         return 50 + 1.9 * self.num_living_units
 
 
-class LoadGroupB2(LoadGroup):
+class LoadGroupB2(LoadGroupPointBased):
     code = ["b", 2]
     title = "Socket-outlets 15 A"
     description = (
@@ -465,7 +442,7 @@ class LoadGroupB2(LoadGroup):
         return 10
 
 
-class LoadGroupB3(LoadGroup):
+class LoadGroupB3(LoadGroupPointBased):
     code = ["b", 3]
     title = "Socket-outlets 20 A"
     description = (
@@ -476,21 +453,12 @@ class LoadGroupB3(LoadGroup):
     )
     notes = [c1_notes.C1Note8, c1_notes.C1Note10]
 
-    def __init__(
-        self,
-        rating: float | list[float] | None = None,
-        num_load: int = 1,
-        rating_type: Literal["A", "W"] = "A",
-        num_living_units: int = 1,
-    ):
-        super().__init__(rating, num_load, rating_type, num_living_units)
-
     def _calculate_maximum_demand_a(self) -> float:
         # 15 A
         return 15
 
 
-class LoadGroupC(LoadGroup):
+class LoadGroupC(LoadGroupRatingBased):
     code = ["c"]
     title = "Ranges, cooking appliances, laundry equipment > 10 A"
     description = """
@@ -499,15 +467,6 @@ class LoadGroupC(LoadGroup):
         connection thereof
         """
     notes = [c1_notes.C1Note8]
-
-    def __init__(
-        self,
-        rating: float | list[float] | None = None,
-        num_load: int = 1,
-        rating_type: Literal["A", "W"] = "A",
-        num_living_units: int = 1,
-    ):
-        super().__init__(rating, num_load, rating_type, num_living_units)
 
     def _calculate_maximum_demand_a_1_living_unit(self) -> float:
         # 50% connected load
@@ -526,7 +485,7 @@ class LoadGroupC(LoadGroup):
         return 2.8 * self.num_living_units
 
 
-class LoadGroupD(LoadGroup):
+class LoadGroupD(LoadGroupRatingBased):
     """
     Fixed space heating or airconditioning equipment,
     saunas or socket-outlets rated at more than 10 A for the
@@ -547,7 +506,7 @@ class LoadGroupD(LoadGroup):
         return self.total_rating_a * 0.75
 
 
-class LoadGroupE(LoadGroup):
+class LoadGroupE(LoadGroupRatingBased):
     """
     Instantaneous water heaters(12)
     """
@@ -574,7 +533,7 @@ class LoadGroupE(LoadGroup):
         return 100 + 0.8 * self.num_living_units
 
 
-class LoadGroupF(LoadGroup):
+class LoadGroupF(LoadGroupRatingBased):
     """
     Storage water heaters(13)
     """
@@ -601,7 +560,7 @@ class LoadGroupF(LoadGroup):
         return 100 + 0.8 * self.num_living_units
 
 
-class LoadGroupG(LoadGroup):
+class LoadGroupG(LoadGroupRatingBased):
     """
     Spa and swimming pool heaters
     """
@@ -615,13 +574,13 @@ class LoadGroupG(LoadGroup):
         super().__init__(rating, num_load, rating_type, num_living_units)
         raise NotImplementedError(
             "This load group is currently not supported."
-        )  # FIXME
+        )  # FIXME #6
 
         # 75% of the largest spa, plus 75% of the largest swimming pool,
         # plus 25% of the remainder
 
 
-class LoadGroupH(LoadGroup):
+class LoadGroupH(LoadGroupRatingBased):
     """
     Communal lighting
     """
@@ -632,21 +591,12 @@ class LoadGroupH(LoadGroup):
     notes = [c1_notes.C1Note6, c1_notes.C1Note7]
     _min_num_units = 2
 
-    def __init__(
-        self,
-        rating: float | list[float] | None = None,
-        num_load: int = 1,
-        rating_type: Literal["A", "W"] = "A",
-        num_living_units: int = 1,
-    ):
-        super().__init__(rating, num_load, rating_type, num_living_units)
-
     def _calculate_maximum_demand_a(self) -> float:
         # Full connected load
         return self.total_rating_a
 
 
-class LoadGroupI(LoadGroup):
+class LoadGroupI(LoadGroupPointBased):
     """
     Socket-outlets not included in load groups (j) and (m)
     below(8, 10, 14)
@@ -665,21 +615,12 @@ class LoadGroupI(LoadGroup):
     notes = [c1_notes.C1Note8, c1_notes.C1Note10, c1_notes.C1Note14]
     _min_num_units = 2
 
-    def __init__(
-        self,
-        rating: float | list[float] | None = None,
-        num_load: int = 1,
-        rating_type: Literal["A", "W"] = "A",
-        num_living_units: int = 1,
-    ):
-        super().__init__(rating, num_load, rating_type, num_living_units)
-
     def _calculate_maximum_demand_a(self) -> float:
         # 2 A per point, up to a maximum of 15 A
         return min(2 * self.num_loads, 15)
 
 
-class LoadGroupJ1(LoadGroup):
+class LoadGroupJ1(LoadGroupRatingBased):
     """
     Appliances rated at more than 10 A and socket-outlets
     for the connection thereof
@@ -699,21 +640,12 @@ class LoadGroupJ1(LoadGroup):
 
     _min_num_units = 2
 
-    def __init__(
-        self,
-        rating: float | list[float] | None = None,
-        num_load: int = 1,
-        rating_type: Literal["A", "W"] = "A",
-        num_living_units: int = 1,
-    ):
-        super().__init__(rating, num_load, rating_type, num_living_units)
-
     def _calculate_maximum_demand_a(self) -> float:
         # 50% connected load
         return self.total_rating_a * 0.5
 
 
-class LoadGroupJ2(LoadGroup):
+class LoadGroupJ2(LoadGroupRatingBased):
     code = ["j", 2]
     title = "Fixed space heating, airconditioning equipment, saunas > 10 A"
     description = (
@@ -726,21 +658,12 @@ class LoadGroupJ2(LoadGroup):
 
     _min_num_units = 2
 
-    def __init__(
-        self,
-        rating: float | list[float] | None = None,
-        num_load: int = 1,
-        rating_type: Literal["A", "W"] = "A",
-        num_living_units: int = 1,
-    ):
-        super().__init__(rating, num_load, rating_type, num_living_units)
-
     def _calculate_maximum_demand_a(self) -> float:
         # 75% connected load
         return self.total_rating_a * 0.75
 
 
-class LoadGroupJ3(LoadGroup):
+class LoadGroupJ3(LoadGroupRatingBased):
     code = ["j", 3]
     title = "Spa and swimming pool heaters > 10 A"
     description = (
@@ -760,12 +683,12 @@ class LoadGroupJ3(LoadGroup):
         super().__init__(rating, num_load, rating_type, num_living_units)
         raise NotImplementedError(
             "This load group is currently not supported."
-        )  # FIXME
+        )  # FIXME #6
         # 75% of the largest spa plus 75% of the largest swimming pool,
         # plus 25% of the remainder
 
 
-class LoadGroupJ4(LoadGroup):
+class LoadGroupJ4(LoadGroupRatingBased):
     code = ["j", 4]
     title = "Charging equipment associated with electric vehicles"
     description = (
@@ -791,17 +714,17 @@ class LoadGroupJ4(LoadGroup):
         return self.total_rating_a * 0.75
 
 
-class LoadGroupK(LoadGroup):
+class LoadGroupK(LoadGroupRatingBased):
     code = ["k"]
     description = "Lifts"
 
 
-class LoadGroupL(LoadGroup):
+class LoadGroupL(LoadGroupRatingBased):
     code = ["l"]
     description = "Motors"
 
 
-class LoadGroupM(LoadGroup):
+class LoadGroupM(LoadGroupRatingBased):
     code = ["m"]
     title = "Appliances other than those set out in load groups (a) to (l) above"
     description = (
@@ -810,6 +733,20 @@ class LoadGroupM(LoadGroup):
         "welding machines, radio transmitters, X-ray equipment"
         "and the like"
     )
+
+    def __init__(
+        self,
+        rating: float | Iterable[float] | None = None,
+        rating_unit: Literal["A", "W"] = "A",
+        num_living_units: int = 1,
+    ):
+        if rating_unit == "W":
+            rating = self.watts_to_amperes(rating)
+
+        if (rating <= 5 and num_living_units == 1) or rating <= 10:
+            super().__init__(0, "A", num_living_units)
+        else:
+            super().__init__(rating, "A", num_living_units)
 
 
 _ALL_LOAD_GROUPS = [
