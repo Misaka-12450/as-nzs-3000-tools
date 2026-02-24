@@ -41,6 +41,7 @@ class _LoadGroupMeta(type):
         return " ".join(parts)
 
     def __str__(cls) -> str:
+        # TODO: #4 Deprecate
         s: str = ""
 
         if cls.exceptions:
@@ -95,9 +96,11 @@ class LoadGroup(metaclass=_LoadGroupMeta):
 
     def __init__(
         self,
-        rating: float | list[float] | None = None,
-        num_load: int = 1,
-        rating_type: Literal["A", "W"] = "A",
+        rating: (
+            float | list[float] | None
+        ) = None,  # TODO: #2 Move to LoadGroupRatingBased
+        num_load: int = 1,  # TODO: #2 Move to LoadGroupPointBased
+        rating_type: Literal["A", "W"] = "A",  # TODO: # 3 Deprecate
         num_living_units: int = 1,
     ):
         """
@@ -159,6 +162,7 @@ class LoadGroup(metaclass=_LoadGroupMeta):
         not empty.
         :return: The combined string with newline(s) in-between if applicable.
         """
+        # TODO: #4 Deprecate
         if s1 and s2:
             return s1 + "\n" * n + s2
         return s1 + s2
