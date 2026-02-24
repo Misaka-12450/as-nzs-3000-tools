@@ -265,6 +265,38 @@ class LoadGroup(metaclass=_LoadGroupMeta):
         return s
 
 
+class LoadGroupRatingBased(LoadGroup):
+    def __init__(
+        self, rating: float | list[float] | None = None, num_living_units: int = 1
+    ):
+        super().__init__(num_living_units=num_living_units)
+        if rating <= 0:
+            raise ValueError("rating must be greater than zero.")
+        self.rating = rating
+
+    def add(self, rating: float) -> None:
+        # TODO: #5
+        pass
+
+    def change(self, rating: float) -> None:
+        # TODO: #5
+        pass
+
+    def remove(self, rating: float) -> None:
+        # TODO: #5
+        pass
+
+
+class LoadGroupPointBased(LoadGroup):
+    max_rating: float
+
+    def __init__(self, num_load: int = 1, num_living_units: int = 1):
+        super().__init__(num_living_units=num_living_units)
+        if num_load <= 0:
+            raise ValueError("num_load must be greater than zero.")
+        self.num_load = num_load
+
+
 class LoadGroupManual(LoadGroup):
     title = "Manually assessed maximum demand"
 
