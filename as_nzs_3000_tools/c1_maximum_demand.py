@@ -1,10 +1,12 @@
+# TODO: Rename to as_nzs_3000_c_load_groups.py
+
 from __future__ import annotations
 
 from typing import Literal
 
 import roman
 
-from as_nzs_3000_tools import c1_notes
+from as_nzs_3000_tools import as_nzs_3000_c1_notes as c1_notes
 
 _NOMINAL_VOLTAGE = 230
 
