@@ -1,6 +1,6 @@
 import pytest
 
-import src.as_nzs_3000.c1_maximum_demand as c1
+import as_nzs_3000_tools.as_nzs_3000_c_load_groups as c1
 
 
 class TestLoadGroupA1:

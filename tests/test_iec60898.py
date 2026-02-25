@@ -3,8 +3,8 @@ from typing import Sequence
 
 import pytest
 
-from as_nzs_3000.iec60898_1_circuit_breakers import ClipsalMAX9RCBO as Max9
-from as_nzs_3000.iec60898_1_circuit_breakers import TripCurveType
+from as_nzs_3000_tools.iec60898_1_circuit_breakers import ClipsalMAX9RCBO as Max9
+from as_nzs_3000_tools.iec60898_1_circuit_breakers import TripCurveType
 
 _TEST_CIRCUIT_BREAKERS = [Max9]  # TODO: Map breakers to test data when more are added
 
@@ -114,13 +114,13 @@ def test_get_trip_current(
     :return:
     """
     min_current, max_current = cb.get_trip_current(time_s, curve)
-    if isinstance(min_expected, Sequence) and not isinstance(max_expected, str):
+    if isinstance(min_expected, Sequence):
         assert min_expected[0] <= min_current <= min_expected[1]
     else:
         assert min_current == pytest.approx(
             min_expected, abs=get_error_margin(min_expected)
         )
-    if isinstance(max_expected, Sequence) and not isinstance(max_expected, str):
+    if isinstance(max_expected, Sequence):
         assert max_expected[0] <= max_current <= max_expected[1]
     else:
         assert max_current == pytest.approx(
@@ -129,4 +129,4 @@ def test_get_trip_current(
 
 
 def test_get_minimum_trip_current_amps():
-    assert Max9(10).get_minimum_trip_current_amps == 11.6
+    assert Max9(10).minimum_trip_current_amps == 11.6

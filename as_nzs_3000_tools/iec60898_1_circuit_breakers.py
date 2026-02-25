@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import math
 import textwrap
+from functools import lru_cache
 from io import StringIO
 from typing import Literal, TypeAlias
 
@@ -12,6 +13,7 @@ TIME_COLUMN: str = "time"
 CURRENT_COLUMN: str = "current_multiple"
 
 TripCurveType: TypeAlias = Literal["B", "C", "D"]
+MinMaxType: TypeAlias = Literal["MIN", "MAX", "BOTH"]
 
 _1_HR: int = 3600
 TRIP_CURRENT_1_HR: tuple[float, float] = (1.13, 1.45)
@@ -21,8 +23,8 @@ class IEC60898Part1CircuitBreaker:
     """
     Base class for circuit breakers.
 
-    :cvar MIN_CURVE: DataFrame containing the maximum trip curve.
-    :cvar MAX_CURVE: DataFrame containing the minimum trip curve.
+    :cvar MIN_CURVE: DataFrame containing the minimum trip curve (fastest trip).
+    :cvar MAX_CURVE: DataFrame containing the maximum trip curve (slowest trip).
     :cvar TRIP_CURRENT_INSTANT: Dictionary mapping trip curve types to their
         instant trip current multiples.
     :cvar RATINGS_AVAILABLE: Tuple of available ratings for the circuit breaker.
@@ -63,6 +65,58 @@ class IEC60898Part1CircuitBreaker:
         return float(10 ** np.interp(math.log10(x), log_x, log_y))
 
     @classmethod
+    @lru_cache(maxsize=None)
+    def curve_interpolated(
+        cls, curve_type: TripCurveType | None = None
+    ) -> pd.DataFrame:
+        """
+        Get the interpolated full trip curve for the circuit breaker.
+
+        :param curve_type: Type of trip curve. Use `None` to get the full curve range.
+            # TODO: Implement filtering
+        :return: DataFrame containing the interpolated curve in the format:
+            | current_multiple | min_time | max_time |
+        """
+
+        x_min = min(
+            cls.MIN_CURVE[CURRENT_COLUMN].min(), cls.MAX_CURVE[CURRENT_COLUMN].min()
+        )
+        x_max = max(
+            cls.MIN_CURVE[CURRENT_COLUMN].max(), cls.MAX_CURVE[CURRENT_COLUMN].max()
+        )
+
+        # Sample many points on a log-spaced grid between min and max current multiples
+        x_samples = np.round(np.logspace(np.log10(x_min), np.log10(x_max), 400), 2)
+        y_samples_min = []
+        y_samples_max = []
+
+        for x in x_samples:
+            y_samples_min.append(
+                round(
+                    cls._interpolate_curve(
+                        cls.MIN_CURVE, CURRENT_COLUMN, TIME_COLUMN, x
+                    ),
+                    2,
+                )
+            )
+            y_samples_max.append(
+                round(
+                    cls._interpolate_curve(
+                        cls.MAX_CURVE, CURRENT_COLUMN, TIME_COLUMN, x
+                    ),
+                    2,
+                )
+            )
+
+        return pd.DataFrame(
+            {
+                CURRENT_COLUMN: x_samples,
+                "min_" + TIME_COLUMN: y_samples_min,
+                "max_" + TIME_COLUMN: y_samples_max,
+            }
+        )
+
+    @classmethod
     def _validate_curve(cls, curve: TripCurveType) -> None:
         if curve not in cls.TRIP_CURRENT_INSTANT:
             raise ValueError(
@@ -72,13 +126,16 @@ class IEC60898Part1CircuitBreaker:
 
     @classmethod
     def get_trip_time(
-        cls, current_multiple: float, curve: TripCurveType
+        cls,
+        current_multiple: float,
+        curve: TripCurveType | None = None,
+        min_max: MinMaxType = "BOTH",
     ) -> tuple[float, float]:
         """
         Calculate the trip time range for a given current multiple.
 
-        :param curve: Type of trip curve
         :param current_multiple: Current multiple (I/In)
+        :param curve: Type of trip curve
         :return: Tuple of (min, max) time in seconds up to 3600s
         """
         cls._validate_curve(curve)
@@ -115,9 +172,10 @@ class IEC60898Part1CircuitBreaker:
         """
         Calculate the trip current range for a given time.
 
-        :param curve: Type of trip curve
         :param time: Time in seconds
-        :return: Tuple of (min, max) current in amps (2 decimal places)
+        :param curve: Type of trip curve
+        :return: Tuple of (min, max) current multiples (I/In), 2 decimal places.
+            Multiply by the circuit breaker rated current to obtain amperes.
         """
         cls._validate_curve(curve)
 
@@ -288,3 +346,67 @@ class ClipsalMAX9RCBO(IEC61009RCBO):
         :raises ValueError: If the rating is not in the `cls.RATINGS_AVAILABLE` tuple
         """
         super().__init__(rating, curve)
+
+
+class LSBKNCircuitBreaker(IEC60898Part1CircuitBreaker):
+    MIN_CURVE = pd.read_csv(
+        StringIO(
+            textwrap.dedent(
+                """
+                1.16, 3600
+                1.18, 2400
+                1.22, 1200
+                1.26, 600
+                1.28, 480
+                1.30, 360
+                1.34, 240
+                1.41, 120
+                1.50, 60
+                1.55, 40
+                1.72, 20
+                1.93, 10
+                2.00, 8
+                2.13, 6
+                2.36, 4
+                3.00, 2
+                """
+            ).strip()
+        ),
+        skipinitialspace=True,
+        header=None,
+        names=[CURRENT_COLUMN, TIME_COLUMN],
+    )
+
+    MAX_CURVE = pd.read_csv(
+        StringIO(
+            textwrap.dedent(
+                """
+                1.48, 3600
+                1.52, 2400
+                1.58, 1200
+                1.68, 600
+                1.72, 480
+                1.78, 360
+                1.89, 240
+                2.09, 120
+                2.36, 60
+                2.12, 120
+                2.39, 60
+                2.63, 40
+                3.07, 20
+                """
+            ).strip()
+        ),
+        skipinitialspace=True,
+        header=None,
+        names=[CURRENT_COLUMN, TIME_COLUMN],
+    )
+
+
+__all__ = [
+    "IEC60898Part1CircuitBreaker",
+    "IEC61009RCBO",
+    "ClipsalMAX9RCBO",
+    "CURRENT_COLUMN",
+    "TIME_COLUMN",
+]

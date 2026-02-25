@@ -1,44 +1,43 @@
 import streamlit as st
 from streamlit.errors import StreamlitSecretNotFoundError
-from streamlit.navigation.page import StreamlitPage
 
 
-HOME_PAGE: StreamlitPage = st.Page(
-    "pages/home.py", title="Home", icon=":material/house:"
-)
-# IEC60898: StreamlitPage = st.Page(
-#     "pages/iec60898_1_circuit_breakers.py",
-#     title="IEC 60898 Circuit Breaker Calculator",
-#     icon=":material/switch:",
-# )
-MAXIMUM_DEMAND: StreamlitPage = st.Page(
-    "pages/maximum_demand.py",
-    title="AS/NZS 3000 Maximum Demand",
-    icon=":material/bolt:",
-)
+def load_site_title() -> None:
+    """
+    Load the site title from session state or secrets, with a default fallback.
+    """
+    if not st.session_state.get("site_title"):
+        title: str
+        try:
+            st.session_state["site_title"] = st.secrets.get("site", {}).get("title")
+        except StreamlitSecretNotFoundError:
+            # Can be raised even with .get() if .streamlit/secrets.toml does not exist
+            st.session_state["site_title"] = "Australian Home Building Calculators"
+
+
+load_site_title()
+
 
 pages = {
-    "": [HOME_PAGE],
-    "Electrical": [
-        # IEC60898,
-        MAXIMUM_DEMAND,
+    "": [
+        st.Page("pages/home.py", title="Home", icon=":material/house:"),  # Home Page
+    ],
+    # "IEC60898-1 Circuit-breakers": [
+    #     st.Page(
+    #         "pages/iec60898.py",
+    #         title="IEC 60898 Circuit Breaker",
+    #         icon=":material/switch:",
+    #     ),
+    # ],
+    "AS/NZS 3000 Wiring Rules": [
+        st.Page(
+            "pages/maximum_demand.py",
+            title="C1 Domestic Maximum Demand",
+            icon=":material/bolt:",
+        ),
     ],
 }
-# pages = [HOME_PAGE, IEC60898]
 
-if not st.session_state.get("site_title"):
-    site_title: str
-    try:
-        site_title_prefix = st.secrets.get("site", {}).get("title")
-    except StreamlitSecretNotFoundError:
-        site_title_prefix = None
-    if site_title_prefix:
-        site_title = f"{site_title_prefix} Tools"
-    else:
-        site_title = "Tools"
-    st.session_state["site_title"] = site_title
-else:
-    site_title = st.session_state["site_title"]
 
-pg = st.navigation(pages, position="top")
-pg.run()
+if __name__ == "__main__":
+    st.navigation(pages).run()
